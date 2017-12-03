@@ -9,19 +9,6 @@ struct futhark_context_config *futhark_context_config_new();
 void futhark_context_config_free(struct futhark_context_config *cfg);
 void futhark_context_config_set_debugging(struct futhark_context_config *cfg,
                                           int flag);
-void futhark_context_config_set_device(struct futhark_context_config *cfg, const
-                                       char *s);
-void futhark_context_config_set_platform(struct futhark_context_config *cfg,
-                                         const char *s);
-void futhark_context_config_dump_program_to(struct futhark_context_config *cfg,
-                                            const char *path);
-void
-futhark_context_config_load_program_from(struct futhark_context_config *cfg,
-                                         const char *path);
-void futhark_context_config_set_group_size(struct futhark_context_config *cfg,
-                                           int size);
-void futhark_context_config_set_num_groups(struct futhark_context_config *cfg,
-                                           int num);
 struct futhark_context ;
 struct futhark_context *futhark_context_new(struct futhark_context_config *cfg);
 void futhark_context_free(struct futhark_context *ctx);
@@ -966,21 +953,10 @@ int parse_options(struct futhark_context_config *cfg, int argc,
                                            {"entry-point", required_argument,
                                             NULL, 4}, {"binary-output",
                                                        no_argument, NULL, 5},
-                                           {"platform", required_argument, NULL,
-                                            6}, {"device", required_argument,
-                                                 NULL, 7}, {"group-size",
-                                                            required_argument,
-                                                            NULL, 8},
-                                           {"num-groups", required_argument,
-                                            NULL, 9}, {"dump-opencl",
-                                                       required_argument, NULL,
-                                                       10}, {"load-opencl",
-                                                             required_argument,
-                                                             NULL, 11}, {0, 0,
-                                                                         0, 0}};
+                                           {0, 0, 0, 0}};
     
-    while ((ch = getopt_long(argc, argv, ":t:r:De:bp:d:", long_options,
-                             NULL)) != -1) {
+    while ((ch = getopt_long(argc, argv, ":t:r:De:b", long_options, NULL)) !=
+           -1) {
         if (ch == 1 || ch == 't') {
             runtime_file = fopen(optarg, "w");
             if (runtime_file == NULL)
@@ -998,18 +974,6 @@ int parse_options(struct futhark_context_config *cfg, int argc,
             entry_point = optarg;
         if (ch == 5 || ch == 'b')
             binary_output = 1;
-        if (ch == 6 || ch == 'p')
-            futhark_context_config_set_platform(cfg, optarg);
-        if (ch == 7 || ch == 'd')
-            futhark_context_config_set_device(cfg, optarg);
-        if (ch == 8)
-            futhark_context_config_set_group_size(cfg, atoi(optarg));
-        if (ch == 9)
-            futhark_context_config_set_num_groups(cfg, atoi(optarg));
-        if (ch == 10)
-            futhark_context_config_dump_program_to(cfg, optarg);
-        if (ch == 11)
-            futhark_context_config_load_program_from(cfg, optarg);
         if (ch == ':')
             panic(-1, "Missing argument for option %s\n", argv[optind - 1]);
         if (ch == '?')
@@ -1021,36 +985,36 @@ static void futrts_cli_entry_main(struct futhark_context *ctx)
 {
     int64_t t_start, t_end;
     int time_runs;
-    struct futhark_i32_1d *read_value_3351;
-    int64_t read_shape_3352[1];
-    int32_t *read_arr_3353 = NULL;
+    struct futhark_i32_1d *read_value_3188;
+    int64_t read_shape_3189[1];
+    int32_t *read_arr_3190 = NULL;
     
     errno = 0;
-    if (read_array(&i32, (void **) &read_arr_3353, read_shape_3352, 1) != 0)
+    if (read_array(&i32, (void **) &read_arr_3190, read_shape_3189, 1) != 0)
         panic(1, "Failed reading input of type %s%s (errno: %s).\n", "[]",
               i32.type_name, strerror(errno));
     
-    struct futhark_i32_1d *read_value_3354;
-    int64_t read_shape_3355[1];
-    int32_t *read_arr_3356 = NULL;
+    struct futhark_i32_1d *read_value_3191;
+    int64_t read_shape_3192[1];
+    int32_t *read_arr_3193 = NULL;
     
     errno = 0;
-    if (read_array(&i32, (void **) &read_arr_3356, read_shape_3355, 1) != 0)
+    if (read_array(&i32, (void **) &read_arr_3193, read_shape_3192, 1) != 0)
         panic(1, "Failed reading input of type %s%s (errno: %s).\n", "[]",
               i32.type_name, strerror(errno));
     
-    int32_t result_3357;
+    int32_t result_3194;
     
     if (perform_warmup) {
         time_runs = 0;
-        assert((read_value_3351 = futhark_new_i32_1d(ctx, read_arr_3353,
-                                                     read_shape_3352[0])) != 0);
-        assert((read_value_3354 = futhark_new_i32_1d(ctx, read_arr_3356,
-                                                     read_shape_3355[0])) != 0);
+        assert((read_value_3188 = futhark_new_i32_1d(ctx, read_arr_3190,
+                                                     read_shape_3189[0])) != 0);
+        assert((read_value_3191 = futhark_new_i32_1d(ctx, read_arr_3193,
+                                                     read_shape_3192[0])) != 0);
         assert(futhark_context_sync(ctx) == 0);
         t_start = get_wall_time();
-        assert(futhark_main(ctx, &result_3357, read_value_3351,
-                            read_value_3354) == 0);
+        assert(futhark_main(ctx, &result_3194, read_value_3188,
+                            read_value_3191) == 0);
         assert(futhark_context_sync(ctx) == 0);
         t_end = get_wall_time();
         
@@ -1058,21 +1022,21 @@ static void futrts_cli_entry_main(struct futhark_context *ctx)
         
         if (time_runs && runtime_file != NULL)
             fprintf(runtime_file, "%ld\n", elapsed_usec);
-        assert(futhark_free_i32_1d(ctx, read_value_3351) == 0);
-        assert(futhark_free_i32_1d(ctx, read_value_3354) == 0);
+        assert(futhark_free_i32_1d(ctx, read_value_3188) == 0);
+        assert(futhark_free_i32_1d(ctx, read_value_3191) == 0);
         ;
     }
     time_runs = 1;
     /* Proper run. */
     for (int run = 0; run < num_runs; run++) {
-        assert((read_value_3351 = futhark_new_i32_1d(ctx, read_arr_3353,
-                                                     read_shape_3352[0])) != 0);
-        assert((read_value_3354 = futhark_new_i32_1d(ctx, read_arr_3356,
-                                                     read_shape_3355[0])) != 0);
+        assert((read_value_3188 = futhark_new_i32_1d(ctx, read_arr_3190,
+                                                     read_shape_3189[0])) != 0);
+        assert((read_value_3191 = futhark_new_i32_1d(ctx, read_arr_3193,
+                                                     read_shape_3192[0])) != 0);
         assert(futhark_context_sync(ctx) == 0);
         t_start = get_wall_time();
-        assert(futhark_main(ctx, &result_3357, read_value_3351,
-                            read_value_3354) == 0);
+        assert(futhark_main(ctx, &result_3194, read_value_3188,
+                            read_value_3191) == 0);
         assert(futhark_context_sync(ctx) == 0);
         t_end = get_wall_time();
         
@@ -1080,15 +1044,15 @@ static void futrts_cli_entry_main(struct futhark_context *ctx)
         
         if (time_runs && runtime_file != NULL)
             fprintf(runtime_file, "%ld\n", elapsed_usec);
-        assert(futhark_free_i32_1d(ctx, read_value_3351) == 0);
-        assert(futhark_free_i32_1d(ctx, read_value_3354) == 0);
+        assert(futhark_free_i32_1d(ctx, read_value_3188) == 0);
+        assert(futhark_free_i32_1d(ctx, read_value_3191) == 0);
         if (run < num_runs - 1) {
             ;
         }
     }
-    free(read_arr_3353);
-    free(read_arr_3356);
-    write_scalar(stdout, binary_output, &i32, &result_3357);
+    free(read_arr_3190);
+    free(read_arr_3193);
+    write_scalar(stdout, binary_output, &i32, &result_3194);
     printf("\n");
     ;
 }
@@ -1151,495 +1115,13 @@ int main(int argc, char **argv)
 #include <ctype.h>
 #include <errno.h>
 #include <assert.h>
-/* The simple OpenCL runtime framework used by Futhark. */
-
-#ifdef __APPLE__
-  #include <OpenCL/cl.h>
-#else
-  #include <CL/cl.h>
-#endif
-
-#define OPENCL_SUCCEED(e) opencl_succeed(e, #e, __FILE__, __LINE__)
-
-struct opencl_config {
-  int debugging;
-  int preferred_device_num;
-  const char *preferred_platform;
-  const char *preferred_device;
-
-  const char* dump_program_to;
-  const char* load_program_from;
-
-  size_t group_size;
-  size_t num_groups;
-  size_t tile_size;
-  size_t transpose_block_dim;
-};
-
-void opencl_config_init(struct opencl_config *cfg) {
-  cfg->debugging = 0;
-  cfg->preferred_device_num = 0;
-  cfg->preferred_platform = "";
-  cfg->preferred_device = "";
-  cfg->dump_program_to = NULL;
-  cfg->load_program_from = NULL;
-
-  cfg->group_size = 0;
-  cfg->num_groups = 0;
-  cfg->tile_size = 32;
-  cfg->transpose_block_dim = 16;
-}
-
-struct opencl_context {
-  cl_platform_id platform;
-  cl_device_id device;
-  cl_context ctx;
-  cl_command_queue queue;
-
-  struct opencl_config cfg;
-
-  size_t lockstep_width;
-};
-
-struct opencl_device_option {
-  cl_platform_id platform;
-  cl_device_id device;
-  cl_device_type device_type;
-  char *platform_name;
-  char *device_name;
-};
-
-/* This function must be defined by the user.  It is invoked by
-   setup_opencl() after the platform and device has been found, but
-   before the program is loaded.  Its intended use is to tune
-   constants based on the selected platform and device. */
-static void post_opencl_setup(struct opencl_context*, struct opencl_device_option*);
-
-static char *strclone(const char *str) {
-  size_t size = strlen(str) + 1;
-  char *copy = malloc(size);
-  if (copy == NULL) {
-    return NULL;
-  }
-
-  memcpy(copy, str, size);
-  return copy;
-}
-
-static const char* opencl_error_string(unsigned int err)
-{
-    switch (err) {
-        case CL_SUCCESS:                            return "Success!";
-        case CL_DEVICE_NOT_FOUND:                   return "Device not found.";
-        case CL_DEVICE_NOT_AVAILABLE:               return "Device not available";
-        case CL_COMPILER_NOT_AVAILABLE:             return "Compiler not available";
-        case CL_MEM_OBJECT_ALLOCATION_FAILURE:      return "Memory object allocation failure";
-        case CL_OUT_OF_RESOURCES:                   return "Out of resources";
-        case CL_OUT_OF_HOST_MEMORY:                 return "Out of host memory";
-        case CL_PROFILING_INFO_NOT_AVAILABLE:       return "Profiling information not available";
-        case CL_MEM_COPY_OVERLAP:                   return "Memory copy overlap";
-        case CL_IMAGE_FORMAT_MISMATCH:              return "Image format mismatch";
-        case CL_IMAGE_FORMAT_NOT_SUPPORTED:         return "Image format not supported";
-        case CL_BUILD_PROGRAM_FAILURE:              return "Program build failure";
-        case CL_MAP_FAILURE:                        return "Map failure";
-        case CL_INVALID_VALUE:                      return "Invalid value";
-        case CL_INVALID_DEVICE_TYPE:                return "Invalid device type";
-        case CL_INVALID_PLATFORM:                   return "Invalid platform";
-        case CL_INVALID_DEVICE:                     return "Invalid device";
-        case CL_INVALID_CONTEXT:                    return "Invalid context";
-        case CL_INVALID_QUEUE_PROPERTIES:           return "Invalid queue properties";
-        case CL_INVALID_COMMAND_QUEUE:              return "Invalid command queue";
-        case CL_INVALID_HOST_PTR:                   return "Invalid host pointer";
-        case CL_INVALID_MEM_OBJECT:                 return "Invalid memory object";
-        case CL_INVALID_IMAGE_FORMAT_DESCRIPTOR:    return "Invalid image format descriptor";
-        case CL_INVALID_IMAGE_SIZE:                 return "Invalid image size";
-        case CL_INVALID_SAMPLER:                    return "Invalid sampler";
-        case CL_INVALID_BINARY:                     return "Invalid binary";
-        case CL_INVALID_BUILD_OPTIONS:              return "Invalid build options";
-        case CL_INVALID_PROGRAM:                    return "Invalid program";
-        case CL_INVALID_PROGRAM_EXECUTABLE:         return "Invalid program executable";
-        case CL_INVALID_KERNEL_NAME:                return "Invalid kernel name";
-        case CL_INVALID_KERNEL_DEFINITION:          return "Invalid kernel definition";
-        case CL_INVALID_KERNEL:                     return "Invalid kernel";
-        case CL_INVALID_ARG_INDEX:                  return "Invalid argument index";
-        case CL_INVALID_ARG_VALUE:                  return "Invalid argument value";
-        case CL_INVALID_ARG_SIZE:                   return "Invalid argument size";
-        case CL_INVALID_KERNEL_ARGS:                return "Invalid kernel arguments";
-        case CL_INVALID_WORK_DIMENSION:             return "Invalid work dimension";
-        case CL_INVALID_WORK_GROUP_SIZE:            return "Invalid work group size";
-        case CL_INVALID_WORK_ITEM_SIZE:             return "Invalid work item size";
-        case CL_INVALID_GLOBAL_OFFSET:              return "Invalid global offset";
-        case CL_INVALID_EVENT_WAIT_LIST:            return "Invalid event wait list";
-        case CL_INVALID_EVENT:                      return "Invalid event";
-        case CL_INVALID_OPERATION:                  return "Invalid operation";
-        case CL_INVALID_GL_OBJECT:                  return "Invalid OpenGL object";
-        case CL_INVALID_BUFFER_SIZE:                return "Invalid buffer size";
-        case CL_INVALID_MIP_LEVEL:                  return "Invalid mip-map level";
-        default:                                    return "Unknown";
-    }
-}
-
-static void opencl_succeed(unsigned int ret,
-                           const char *call,
-                           const char *file,
-                           int line) {
-  if (ret != CL_SUCCESS) {
-    panic(-1, "%s:%d: OpenCL call\n  %s\nfailed with error code %d (%s)\n",
-          file, line, call, ret, opencl_error_string(ret));
-  }
-}
-
-void set_preferred_platform(struct opencl_config *cfg, const char *s) {
-  cfg->preferred_platform = s;
-}
-
-void set_preferred_device(struct opencl_config *cfg, const char *s) {
-  int x = 0;
-  if (*s == '#') {
-    s++;
-    while (isdigit(*s)) {
-      x = x * 10 + (*s++)-'0';
-    }
-    // Skip trailing spaces.
-    while (isspace(*s)) {
-      s++;
-    }
-  }
-  cfg->preferred_device = s;
-  cfg->preferred_device_num = x;
-}
-
-static char* opencl_platform_info(cl_platform_id platform,
-                                  cl_platform_info param) {
-  size_t req_bytes;
-  char *info;
-
-  OPENCL_SUCCEED(clGetPlatformInfo(platform, param, 0, NULL, &req_bytes));
-
-  info = malloc(req_bytes);
-
-  OPENCL_SUCCEED(clGetPlatformInfo(platform, param, req_bytes, info, NULL));
-
-  return info;
-}
-
-static char* opencl_device_info(cl_device_id device,
-                                cl_device_info param) {
-  size_t req_bytes;
-  char *info;
-
-  OPENCL_SUCCEED(clGetDeviceInfo(device, param, 0, NULL, &req_bytes));
-
-  info = malloc(req_bytes);
-
-  OPENCL_SUCCEED(clGetDeviceInfo(device, param, req_bytes, info, NULL));
-
-  return info;
-}
-
-static void opencl_all_device_options(struct opencl_device_option **devices_out,
-                                      size_t *num_devices_out) {
-  size_t num_devices = 0, num_devices_added = 0;
-
-  cl_platform_id *all_platforms;
-  cl_uint *platform_num_devices;
-
-  cl_uint num_platforms;
-
-  // Find the number of platforms.
-  OPENCL_SUCCEED(clGetPlatformIDs(0, NULL, &num_platforms));
-
-  // Make room for them.
-  all_platforms = calloc(num_platforms, sizeof(cl_platform_id));
-  platform_num_devices = calloc(num_platforms, sizeof(cl_uint));
-
-  // Fetch all the platforms.
-  OPENCL_SUCCEED(clGetPlatformIDs(num_platforms, all_platforms, NULL));
-
-  // Count the number of devices for each platform, as well as the
-  // total number of devices.
-  for (cl_uint i = 0; i < num_platforms; i++) {
-    if (clGetDeviceIDs(all_platforms[i], CL_DEVICE_TYPE_ALL,
-                       0, NULL, &platform_num_devices[i]) == CL_SUCCESS) {
-      num_devices += platform_num_devices[i];
-    } else {
-      platform_num_devices[i] = 0;
-    }
-  }
-
-  // Make room for all the device options.
-  struct opencl_device_option *devices =
-    calloc(num_devices, sizeof(struct opencl_device_option));
-
-  // Loop through the platforms, getting information about their devices.
-  for (cl_uint i = 0; i < num_platforms; i++) {
-    cl_platform_id platform = all_platforms[i];
-    cl_uint num_platform_devices = platform_num_devices[i];
-
-    if (num_platform_devices == 0) {
-      continue;
-    }
-
-    char *platform_name = opencl_platform_info(platform, CL_PLATFORM_NAME);
-    cl_device_id *platform_devices =
-      calloc(num_platform_devices, sizeof(cl_device_id));
-
-    // Fetch all the devices.
-    OPENCL_SUCCEED(clGetDeviceIDs(platform, CL_DEVICE_TYPE_ALL,
-                                  num_platform_devices, platform_devices, NULL));
-
-    // Loop through the devices, adding them to the devices array.
-    for (cl_uint i = 0; i < num_platform_devices; i++) {
-      char *device_name = opencl_device_info(platform_devices[i], CL_DEVICE_NAME);
-      devices[num_devices_added].platform = platform;
-      devices[num_devices_added].device = platform_devices[i];
-      OPENCL_SUCCEED(clGetDeviceInfo(platform_devices[i], CL_DEVICE_TYPE,
-                                     sizeof(cl_device_type),
-                                     &devices[num_devices_added].device_type,
-                                     NULL));
-      // We don't want the structs to share memory, so copy the platform name.
-      // Each device name is already unique.
-      devices[num_devices_added].platform_name = strclone(platform_name);
-      devices[num_devices_added].device_name = device_name;
-      num_devices_added++;
-    }
-    free(platform_devices);
-    free(platform_name);
-  }
-  free(all_platforms);
-  free(platform_num_devices);
-
-  *devices_out = devices;
-  *num_devices_out = num_devices;
-}
-
-static struct opencl_device_option get_preferred_device(const struct opencl_config *cfg) {
-  struct opencl_device_option *devices;
-  size_t num_devices;
-
-  opencl_all_device_options(&devices, &num_devices);
-
-  int num_platform_matches = 0;
-  int num_device_matches = 0;
-
-  for (size_t i = 0; i < num_devices; i++) {
-    struct opencl_device_option device = devices[i];
-    if (strstr(device.platform_name, cfg->preferred_platform) != NULL &&
-        strstr(device.device_name, cfg->preferred_device) != NULL &&
-        num_device_matches++ == cfg->preferred_device_num) {
-      // Free all the platform and device names, except the ones we have chosen.
-      for (size_t j = 0; j < num_devices; j++) {
-        if (j != i) {
-          free(devices[j].platform_name);
-          free(devices[j].device_name);
-        }
-      }
-      free(devices);
-      return device;
-    }
-  }
-
-  panic(1, "Could not find acceptable OpenCL device.\n");
-  exit(1); // Never reached
-}
-
-static void describe_device_option(struct opencl_device_option device) {
-  fprintf(stderr, "Using platform: %s\n", device.platform_name);
-  fprintf(stderr, "Using device: %s\n", device.device_name);
-}
-
-static cl_build_status build_opencl_program(cl_program program, cl_device_id device, const char* options) {
-  cl_int ret_val = clBuildProgram(program, 1, &device, options, NULL, NULL);
-
-  // Avoid termination due to CL_BUILD_PROGRAM_FAILURE
-  if (ret_val != CL_SUCCESS && ret_val != CL_BUILD_PROGRAM_FAILURE) {
-    assert(ret_val == 0);
-  }
-
-  cl_build_status build_status;
-  ret_val = clGetProgramBuildInfo(program,
-                                  device,
-                                  CL_PROGRAM_BUILD_STATUS,
-                                  sizeof(cl_build_status),
-                                  &build_status,
-                                  NULL);
-  assert(ret_val == 0);
-
-  if (build_status != CL_SUCCESS) {
-    char *build_log;
-    size_t ret_val_size;
-    ret_val = clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &ret_val_size);
-    assert(ret_val == 0);
-
-    build_log = malloc(ret_val_size+1);
-    clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, ret_val_size, build_log, NULL);
-    assert(ret_val == 0);
-
-    // The spec technically does not say whether the build log is zero-terminated, so let's be careful.
-    build_log[ret_val_size] = '\0';
-
-    fprintf(stderr, "Build log:\n%s\n", build_log);
-
-    free(build_log);
-  }
-
-  return build_status;
-}
-
-// We take as input several strings representing the program, because
-// C does not guarantee that the compiler supports particularly large
-// literals.  Notably, Visual C has a limit of 2048 characters.  The
-// array must be NULL-terminated.
-static cl_program setup_opencl(struct opencl_context *ctx,
-                               const char *srcs[]) {
-
-  cl_int error;
-  cl_platform_id platform;
-  cl_device_id device;
-  cl_uint platforms, devices;
-  size_t max_group_size;
-
-  ctx->lockstep_width = 0;
-
-  struct opencl_device_option device_option = get_preferred_device(&ctx->cfg);
-
-  if (ctx->cfg.debugging) {
-    describe_device_option(device_option);
-  }
-
-  ctx->device = device = device_option.device;
-  ctx->platform = platform = device_option.platform;
-
-  OPENCL_SUCCEED(clGetDeviceInfo(device, CL_DEVICE_MAX_WORK_GROUP_SIZE,
-                                 sizeof(size_t), &max_group_size, NULL));
-
-  size_t max_tile_size = sqrt(max_group_size);
-
-  if (max_group_size < ctx->cfg.group_size) {
-    fprintf(stderr, "Warning: Device limits group size to %zu (setting was %zu)\n",
-            max_group_size, ctx->cfg.group_size);
-    ctx->cfg.group_size = max_group_size;
-  }
-
-  if (max_tile_size < ctx->cfg.tile_size) {
-    fprintf(stderr, "Warning: Device limits tile size to %zu (setting was %zu)\n",
-            max_tile_size, ctx->cfg.tile_size);
-    ctx->cfg.tile_size = max_tile_size;
-  }
-
-  cl_context_properties properties[] = {
-    CL_CONTEXT_PLATFORM,
-    (cl_context_properties)platform,
-    0
-  };
-  // Note that nVidia's OpenCL requires the platform property
-  ctx->ctx = clCreateContext(properties, 1, &device, NULL, NULL, &error);
-  assert(error == 0);
-
-  ctx->queue = clCreateCommandQueue(ctx->ctx, device, 0, &error);
-  assert(error == 0);
-
-  // Make sure this function is defined.
-  post_opencl_setup(ctx, &device_option);
-
-  if (ctx->cfg.debugging) {
-    fprintf(stderr, "Lockstep width: %d\n", ctx->lockstep_width);
-    fprintf(stderr, "Default group size: %d\n", ctx->cfg.group_size);
-    fprintf(stderr, "Default number of groups: %d\n", ctx->cfg.num_groups);
-  }
-
-  char *fut_opencl_src = NULL;
-  size_t src_size = 0;
-
-  // Maybe we have to read OpenCL source from somewhere else (used for debugging).
-  if (ctx->cfg.load_program_from != NULL) {
-    FILE *f = fopen(ctx->cfg.load_program_from, "r");
-    assert(f != NULL);
-    fseek(f, 0, SEEK_END);
-    src_size = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    fut_opencl_src = malloc(src_size);
-    fread(fut_opencl_src, 1, src_size, f);
-    fclose(f);
-  } else {
-    // Build the OpenCL program.  First we have to concatenate all the fragments.
-    for (const char **src = srcs; *src; src++) {
-      src_size += strlen(*src);
-    }
-
-    fut_opencl_src = malloc(src_size + 1);
-
-    size_t n, i;
-    for (i = 0, n = 0; srcs[i]; i++) {
-      strncpy(fut_opencl_src+n, srcs[i], src_size-n);
-      n += strlen(srcs[i]);
-    }
-    fut_opencl_src[src_size] = 0;
-
-  }
-
-  cl_program prog;
-  error = 0;
-  const char* src_ptr[] = {fut_opencl_src};
-
-  if (ctx->cfg.dump_program_to != NULL) {
-    FILE *f = fopen(ctx->cfg.dump_program_to, "w");
-    assert(f != NULL);
-    fputs(fut_opencl_src, f);
-    fclose(f);
-  }
-
-  prog = clCreateProgramWithSource(ctx->ctx, 1, src_ptr, &src_size, &error);
-  assert(error == 0);
-  char compile_opts[1024];
-  snprintf(compile_opts, sizeof(compile_opts), "-DFUT_BLOCK_DIM=%d -DLOCKSTEP_WIDTH=%d -DDEFAULT_GROUP_SIZE=%d -DDEFAULT_NUM_GROUPS=%d  -DDEFAULT_TILE_SIZE=%d",
-           (int)ctx->cfg.transpose_block_dim,
-           (int)ctx->lockstep_width,
-           (int)ctx->cfg.group_size,
-           (int)ctx->cfg.num_groups,
-           (int)ctx->cfg.tile_size);
-  OPENCL_SUCCEED(build_opencl_program(prog, device, compile_opts));
-  free(fut_opencl_src);
-
-  return prog;
-}
-
-const char *opencl_program[] =
-           {"__kernel void dummy_kernel(__global unsigned char *dummy, int n)\n{\n    const int thread_gid = get_global_id(0);\n    \n    if (thread_gid >= n)\n        return;\n}\ntypedef char int8_t;\ntypedef short int16_t;\ntypedef int int32_t;\ntypedef long int64_t;\ntypedef uchar uint8_t;\ntypedef ushort uint16_t;\ntypedef uint uint32_t;\ntypedef ulong uint64_t;\n#define ALIGNED_LOCAL_MEMORY(m,size) __local unsigned char m[size] __attribute__ ((align))\nstatic inline int8_t add8(int8_t x, int8_t y)\n{\n    return x + y;\n}\nstatic inline int16_t add16(int16_t x, int16_t y)\n{\n    return x + y;\n}\nstatic inline int32_t add32(int32_t x, int32_t y)\n{\n    return x + y;\n}\nstatic inline int64_t add64(int64_t x, int64_t y)\n{\n    return x + y;\n}\nstatic inline int8_t sub8(int8_t x, int8_t y)\n{\n    return x - y;\n}\nstatic inline int16_t sub16(int16_t x, int16_t y)\n{\n    return x - y;\n}\nstatic inline int32_t sub32(int32_t x, int32_t y)\n{\n    return x - y;\n}\nstatic inline int64_t sub64(int64_t x, int64_t y)\n{\n    return x - y;\n}\nstatic inline int8_t mul8(int8_t x, int8_t y)\n{\n    return x * y;\n}\nstatic inline int16_t mul16(int16_t x, int16_t y)\n{\n    return x * y;\n}\nstatic inline int32_t mul32(int32_t x, int32_t y)\n{\n    return x * y;\n}\nstatic inline int64_t mul64(int64_t x, int64_t y)\n{\n    return x * y;\n}\nstatic inline uint8_t udiv8(uint8_t x, uint8_t y)\n{\n    return x / y;\n}\nstatic inline uint16_t udiv16(uint16_t x, uint16_t y)\n{\n    return x / y;\n}\nstatic inline uint32_t udiv32(uint32_t x, uint32_t y)\n{\n    return x / y;\n}\nstatic inline uint64_t udiv64(uint64_t x, uint64_t y)\n{\n    return x / y;\n}\nstatic inline uint8_t umod8(uint8_t x, uint8_t y)\n{\n    return x % y;\n}\nstatic inline uint16_t umod16(uint16_t x, uint16_t y)\n{\n    return x % y;\n}\nstatic inline uint32_t umod32(uint32_t x, uint32_t y)\n{\n    return x % y;\n}\nstatic inline uint64_t umod64(uint64_t x, uint64_t y)\n{\n    return x % y;\n}\nstatic inline int8_t sdiv8(int8_t x, int8_t y)\n{\n    int8_t q = x / y;\n    int8_t r = x % y;\n    \n    return q - ((",
-            "r != 0 && r < 0 != y < 0) ? 1 : 0);\n}\nstatic inline int16_t sdiv16(int16_t x, int16_t y)\n{\n    int16_t q = x / y;\n    int16_t r = x % y;\n    \n    return q - ((r != 0 && r < 0 != y < 0) ? 1 : 0);\n}\nstatic inline int32_t sdiv32(int32_t x, int32_t y)\n{\n    int32_t q = x / y;\n    int32_t r = x % y;\n    \n    return q - ((r != 0 && r < 0 != y < 0) ? 1 : 0);\n}\nstatic inline int64_t sdiv64(int64_t x, int64_t y)\n{\n    int64_t q = x / y;\n    int64_t r = x % y;\n    \n    return q - ((r != 0 && r < 0 != y < 0) ? 1 : 0);\n}\nstatic inline int8_t smod8(int8_t x, int8_t y)\n{\n    int8_t r = x % y;\n    \n    return r + (r == 0 || (x > 0 && y > 0) || (x < 0 && y < 0) ? 0 : y);\n}\nstatic inline int16_t smod16(int16_t x, int16_t y)\n{\n    int16_t r = x % y;\n    \n    return r + (r == 0 || (x > 0 && y > 0) || (x < 0 && y < 0) ? 0 : y);\n}\nstatic inline int32_t smod32(int32_t x, int32_t y)\n{\n    int32_t r = x % y;\n    \n    return r + (r == 0 || (x > 0 && y > 0) || (x < 0 && y < 0) ? 0 : y);\n}\nstatic inline int64_t smod64(int64_t x, int64_t y)\n{\n    int64_t r = x % y;\n    \n    return r + (r == 0 || (x > 0 && y > 0) || (x < 0 && y < 0) ? 0 : y);\n}\nstatic inline int8_t squot8(int8_t x, int8_t y)\n{\n    return x / y;\n}\nstatic inline int16_t squot16(int16_t x, int16_t y)\n{\n    return x / y;\n}\nstatic inline int32_t squot32(int32_t x, int32_t y)\n{\n    return x / y;\n}\nstatic inline int64_t squot64(int64_t x, int64_t y)\n{\n    return x / y;\n}\nstatic inline int8_t srem8(int8_t x, int8_t y)\n{\n    return x % y;\n}\nstatic inline int16_t srem16(int16_t x, int16_t y)\n{\n    return x % y;\n}\nstatic inline int32_t srem32(int32_t x, int32_t y)\n{\n    return x % y;\n}\nstatic inline int64_t srem64(int64_t x, int64_t y)\n{\n    return x % y;\n}\nstatic inline int8_t smin8(int8_t x, int8_t y)\n{\n    return x < y ? x : y;\n}\nstatic inline int16_t smin16(int16_t x, int16_t y)\n{\n    return x < y ? x : y;\n}\nstatic inline int32_t smin32(int32_t x, int32_t y)\n{\n    return x < y ? x : y;\n}\nstatic inline int64_t smin64(int64_t x, int64_t",
-            " y)\n{\n    return x < y ? x : y;\n}\nstatic inline uint8_t umin8(uint8_t x, uint8_t y)\n{\n    return x < y ? x : y;\n}\nstatic inline uint16_t umin16(uint16_t x, uint16_t y)\n{\n    return x < y ? x : y;\n}\nstatic inline uint32_t umin32(uint32_t x, uint32_t y)\n{\n    return x < y ? x : y;\n}\nstatic inline uint64_t umin64(uint64_t x, uint64_t y)\n{\n    return x < y ? x : y;\n}\nstatic inline int8_t smax8(int8_t x, int8_t y)\n{\n    return x < y ? y : x;\n}\nstatic inline int16_t smax16(int16_t x, int16_t y)\n{\n    return x < y ? y : x;\n}\nstatic inline int32_t smax32(int32_t x, int32_t y)\n{\n    return x < y ? y : x;\n}\nstatic inline int64_t smax64(int64_t x, int64_t y)\n{\n    return x < y ? y : x;\n}\nstatic inline uint8_t umax8(uint8_t x, uint8_t y)\n{\n    return x < y ? y : x;\n}\nstatic inline uint16_t umax16(uint16_t x, uint16_t y)\n{\n    return x < y ? y : x;\n}\nstatic inline uint32_t umax32(uint32_t x, uint32_t y)\n{\n    return x < y ? y : x;\n}\nstatic inline uint64_t umax64(uint64_t x, uint64_t y)\n{\n    return x < y ? y : x;\n}\nstatic inline uint8_t shl8(uint8_t x, uint8_t y)\n{\n    return x << y;\n}\nstatic inline uint16_t shl16(uint16_t x, uint16_t y)\n{\n    return x << y;\n}\nstatic inline uint32_t shl32(uint32_t x, uint32_t y)\n{\n    return x << y;\n}\nstatic inline uint64_t shl64(uint64_t x, uint64_t y)\n{\n    return x << y;\n}\nstatic inline uint8_t lshr8(uint8_t x, uint8_t y)\n{\n    return x >> y;\n}\nstatic inline uint16_t lshr16(uint16_t x, uint16_t y)\n{\n    return x >> y;\n}\nstatic inline uint32_t lshr32(uint32_t x, uint32_t y)\n{\n    return x >> y;\n}\nstatic inline uint64_t lshr64(uint64_t x, uint64_t y)\n{\n    return x >> y;\n}\nstatic inline int8_t ashr8(int8_t x, int8_t y)\n{\n    return x >> y;\n}\nstatic inline int16_t ashr16(int16_t x, int16_t y)\n{\n    return x >> y;\n}\nstatic inline int32_t ashr32(int32_t x, int32_t y)\n{\n    return x >> y;\n}\nstatic inline int64_t ashr64(int64_t x, int64_t y)\n{\n    return x >> y;\n}\nstatic inline uint8_t and8(uint8_t x, uint8_t y)\n{\n    return x & y;\n}\nstatic inline u",
-            "int16_t and16(uint16_t x, uint16_t y)\n{\n    return x & y;\n}\nstatic inline uint32_t and32(uint32_t x, uint32_t y)\n{\n    return x & y;\n}\nstatic inline uint64_t and64(uint64_t x, uint64_t y)\n{\n    return x & y;\n}\nstatic inline uint8_t or8(uint8_t x, uint8_t y)\n{\n    return x | y;\n}\nstatic inline uint16_t or16(uint16_t x, uint16_t y)\n{\n    return x | y;\n}\nstatic inline uint32_t or32(uint32_t x, uint32_t y)\n{\n    return x | y;\n}\nstatic inline uint64_t or64(uint64_t x, uint64_t y)\n{\n    return x | y;\n}\nstatic inline uint8_t xor8(uint8_t x, uint8_t y)\n{\n    return x ^ y;\n}\nstatic inline uint16_t xor16(uint16_t x, uint16_t y)\n{\n    return x ^ y;\n}\nstatic inline uint32_t xor32(uint32_t x, uint32_t y)\n{\n    return x ^ y;\n}\nstatic inline uint64_t xor64(uint64_t x, uint64_t y)\n{\n    return x ^ y;\n}\nstatic inline char ult8(uint8_t x, uint8_t y)\n{\n    return x < y;\n}\nstatic inline char ult16(uint16_t x, uint16_t y)\n{\n    return x < y;\n}\nstatic inline char ult32(uint32_t x, uint32_t y)\n{\n    return x < y;\n}\nstatic inline char ult64(uint64_t x, uint64_t y)\n{\n    return x < y;\n}\nstatic inline char ule8(uint8_t x, uint8_t y)\n{\n    return x <= y;\n}\nstatic inline char ule16(uint16_t x, uint16_t y)\n{\n    return x <= y;\n}\nstatic inline char ule32(uint32_t x, uint32_t y)\n{\n    return x <= y;\n}\nstatic inline char ule64(uint64_t x, uint64_t y)\n{\n    return x <= y;\n}\nstatic inline char slt8(int8_t x, int8_t y)\n{\n    return x < y;\n}\nstatic inline char slt16(int16_t x, int16_t y)\n{\n    return x < y;\n}\nstatic inline char slt32(int32_t x, int32_t y)\n{\n    return x < y;\n}\nstatic inline char slt64(int64_t x, int64_t y)\n{\n    return x < y;\n}\nstatic inline char sle8(int8_t x, int8_t y)\n{\n    return x <= y;\n}\nstatic inline char sle16(int16_t x, int16_t y)\n{\n    return x <= y;\n}\nstatic inline char sle32(int32_t x, int32_t y)\n{\n    return x <= y;\n}\nstatic inline char sle64(int64_t x, int64_t y)\n{\n    return x <= y;\n}\nstatic inline int8_t pow8(int8_t x, int8_t y)\n{\n    int8_t res = 1, rem = y;\n    \n    ",
-            "while (rem != 0) {\n        if (rem & 1)\n            res *= x;\n        rem >>= 1;\n        x *= x;\n    }\n    return res;\n}\nstatic inline int16_t pow16(int16_t x, int16_t y)\n{\n    int16_t res = 1, rem = y;\n    \n    while (rem != 0) {\n        if (rem & 1)\n            res *= x;\n        rem >>= 1;\n        x *= x;\n    }\n    return res;\n}\nstatic inline int32_t pow32(int32_t x, int32_t y)\n{\n    int32_t res = 1, rem = y;\n    \n    while (rem != 0) {\n        if (rem & 1)\n            res *= x;\n        rem >>= 1;\n        x *= x;\n    }\n    return res;\n}\nstatic inline int64_t pow64(int64_t x, int64_t y)\n{\n    int64_t res = 1, rem = y;\n    \n    while (rem != 0) {\n        if (rem & 1)\n            res *= x;\n        rem >>= 1;\n        x *= x;\n    }\n    return res;\n}\nstatic inline int8_t sext_i8_i8(int8_t x)\n{\n    return x;\n}\nstatic inline int16_t sext_i8_i16(int8_t x)\n{\n    return x;\n}\nstatic inline int32_t sext_i8_i32(int8_t x)\n{\n    return x;\n}\nstatic inline int64_t sext_i8_i64(int8_t x)\n{\n    return x;\n}\nstatic inline int8_t sext_i16_i8(int16_t x)\n{\n    return x;\n}\nstatic inline int16_t sext_i16_i16(int16_t x)\n{\n    return x;\n}\nstatic inline int32_t sext_i16_i32(int16_t x)\n{\n    return x;\n}\nstatic inline int64_t sext_i16_i64(int16_t x)\n{\n    return x;\n}\nstatic inline int8_t sext_i32_i8(int32_t x)\n{\n    return x;\n}\nstatic inline int16_t sext_i32_i16(int32_t x)\n{\n    return x;\n}\nstatic inline int32_t sext_i32_i32(int32_t x)\n{\n    return x;\n}\nstatic inline int64_t sext_i32_i64(int32_t x)\n{\n    return x;\n}\nstatic inline int8_t sext_i64_i8(int64_t x)\n{\n    return x;\n}\nstatic inline int16_t sext_i64_i16(int64_t x)\n{\n    return x;\n}\nstatic inline int32_t sext_i64_i32(int64_t x)\n{\n    return x;\n}\nstatic inline int64_t sext_i64_i64(int64_t x)\n{\n    return x;\n}\nstatic inline uint8_t zext_i8_i8(uint8_t x)\n{\n    return x;\n}\nstatic inline uint16_t zext_i8_i16(uint8_t x)\n{\n    return x;\n}\nstatic inline uint32_t zext_i8_i32(uint8_t x)\n{\n    return x;\n}\nstatic inline uint64_t zext_i8_i64(uint8_t x)",
-            "\n{\n    return x;\n}\nstatic inline uint8_t zext_i16_i8(uint16_t x)\n{\n    return x;\n}\nstatic inline uint16_t zext_i16_i16(uint16_t x)\n{\n    return x;\n}\nstatic inline uint32_t zext_i16_i32(uint16_t x)\n{\n    return x;\n}\nstatic inline uint64_t zext_i16_i64(uint16_t x)\n{\n    return x;\n}\nstatic inline uint8_t zext_i32_i8(uint32_t x)\n{\n    return x;\n}\nstatic inline uint16_t zext_i32_i16(uint32_t x)\n{\n    return x;\n}\nstatic inline uint32_t zext_i32_i32(uint32_t x)\n{\n    return x;\n}\nstatic inline uint64_t zext_i32_i64(uint32_t x)\n{\n    return x;\n}\nstatic inline uint8_t zext_i64_i8(uint64_t x)\n{\n    return x;\n}\nstatic inline uint16_t zext_i64_i16(uint64_t x)\n{\n    return x;\n}\nstatic inline uint32_t zext_i64_i32(uint64_t x)\n{\n    return x;\n}\nstatic inline uint64_t zext_i64_i64(uint64_t x)\n{\n    return x;\n}\nstatic inline float fdiv32(float x, float y)\n{\n    return x / y;\n}\nstatic inline float fadd32(float x, float y)\n{\n    return x + y;\n}\nstatic inline float fsub32(float x, float y)\n{\n    return x - y;\n}\nstatic inline float fmul32(float x, float y)\n{\n    return x * y;\n}\nstatic inline float fmin32(float x, float y)\n{\n    return x < y ? x : y;\n}\nstatic inline float fmax32(float x, float y)\n{\n    return x < y ? y : x;\n}\nstatic inline float fpow32(float x, float y)\n{\n    return pow(x, y);\n}\nstatic inline char cmplt32(float x, float y)\n{\n    return x < y;\n}\nstatic inline char cmple32(float x, float y)\n{\n    return x <= y;\n}\nstatic inline float sitofp_i8_f32(int8_t x)\n{\n    return x;\n}\nstatic inline float sitofp_i16_f32(int16_t x)\n{\n    return x;\n}\nstatic inline float sitofp_i32_f32(int32_t x)\n{\n    return x;\n}\nstatic inline float sitofp_i64_f32(int64_t x)\n{\n    return x;\n}\nstatic inline float uitofp_i8_f32(uint8_t x)\n{\n    return x;\n}\nstatic inline float uitofp_i16_f32(uint16_t x)\n{\n    return x;\n}\nstatic inline float uitofp_i32_f32(uint32_t x)\n{\n    return x;\n}\nstatic inline float uitofp_i64_f32(uint64_t x)\n{\n    return x;\n}\nstatic inline int8_t fptosi_f32_i8(float x)\n{\n    return x;",
-            "\n}\nstatic inline int16_t fptosi_f32_i16(float x)\n{\n    return x;\n}\nstatic inline int32_t fptosi_f32_i32(float x)\n{\n    return x;\n}\nstatic inline int64_t fptosi_f32_i64(float x)\n{\n    return x;\n}\nstatic inline uint8_t fptoui_f32_i8(float x)\n{\n    return x;\n}\nstatic inline uint16_t fptoui_f32_i16(float x)\n{\n    return x;\n}\nstatic inline uint32_t fptoui_f32_i32(float x)\n{\n    return x;\n}\nstatic inline uint64_t fptoui_f32_i64(float x)\n{\n    return x;\n}\nstatic inline float futrts_log32(float x)\n{\n    return log(x);\n}\nstatic inline float futrts_sqrt32(float x)\n{\n    return sqrt(x);\n}\nstatic inline float futrts_exp32(float x)\n{\n    return exp(x);\n}\nstatic inline float futrts_cos32(float x)\n{\n    return cos(x);\n}\nstatic inline float futrts_sin32(float x)\n{\n    return sin(x);\n}\nstatic inline float futrts_acos32(float x)\n{\n    return acos(x);\n}\nstatic inline float futrts_asin32(float x)\n{\n    return asin(x);\n}\nstatic inline float futrts_atan32(float x)\n{\n    return atan(x);\n}\nstatic inline float futrts_atan2_32(float x, float y)\n{\n    return atan2(x, y);\n}\nstatic inline char futrts_isnan32(float x)\n{\n    return isnan(x);\n}\nstatic inline char futrts_isinf32(float x)\n{\n    return isinf(x);\n}\nstatic inline int32_t futrts_to_bits32(float x)\n{\n    union {\n        float f;\n        int32_t t;\n    } p;\n    \n    p.f = x;\n    return p.t;\n}\nstatic inline float futrts_from_bits32(int32_t x)\n{\n    union {\n        int32_t f;\n        float t;\n    } p;\n    \n    p.f = x;\n    return p.t;\n}\n#define group_sizze_3183 (DEFAULT_GROUP_SIZE)\n#define group_sizze_3183 (DEFAULT_GROUP_SIZE)\n__kernel void chunked_reduce_kernel_3198(__local volatile\n                                         int64_t *mem_aligned_0,\n                                         int32_t sizze_3145,\n                                         int32_t num_threads_3190,\n                                         int32_t per_thread_elements_3193,\n                                         int32_t per_chunk_3247,\n                              ",
-            "           int32_t per_chunk_3259, __global\n                                         unsigned char *mem_3280, __global\n                                         unsigned char *mem_3291, __global\n                                         unsigned char *mem_3297)\n{\n    __local volatile char *restrict mem_3294 = mem_aligned_0;\n    int32_t wave_sizze_3309;\n    int32_t group_sizze_3310;\n    char thread_active_3311;\n    int32_t global_tid_3198;\n    int32_t local_tid_3199;\n    int32_t group_id_3200;\n    \n    global_tid_3198 = get_global_id(0);\n    local_tid_3199 = get_local_id(0);\n    group_sizze_3310 = get_local_size(0);\n    wave_sizze_3309 = LOCKSTEP_WIDTH;\n    group_id_3200 = get_group_id(0);\n    thread_active_3311 = 1;\n    \n    int32_t chunk_sizze_3205;\n    int32_t starting_point_3312 = global_tid_3198 * per_thread_elements_3193;\n    int32_t remaining_elements_3313 = sizze_3145 - starting_point_3312;\n    \n    if (sle32(remaining_elements_3313, 0) || sle32(sizze_3145,\n                                                   starting_point_3312)) {\n        chunk_sizze_3205 = 0;\n    } else {\n        if (slt32(sizze_3145, (global_tid_3198 + 1) *\n                  per_thread_elements_3193)) {\n            chunk_sizze_3205 = sizze_3145 - global_tid_3198 *\n                per_thread_elements_3193;\n        } else {\n            chunk_sizze_3205 = per_thread_elements_3193;\n        }\n    }\n    \n    int32_t slice_offset_3206;\n    \n    if (thread_active_3311) {\n        slice_offset_3206 = global_tid_3198 * per_thread_elements_3193;\n    }\n    \n    int32_t res_3210;\n    int32_t final_result_3225;\n    int32_t acc_3213 = 0;\n    int32_t groupstream_mapaccum_dummy_chunk_sizze_3211 = 1;\n    \n    if (thread_active_3311) {\n        for (int32_t i_3212 = 0; i_3212 < chunk_sizze_3205; i_3212++) {\n            int32_t binop_param_x_3216 = *(__global\n                                           int32_t *) &mem_3280[((slice_offset_3206 +\n                                                                  i_321",
-            "2 -\n                                                                  squot32(slice_offset_3206 +\n                                                                          i_3212,\n                                                                          per_chunk_3247) *\n                                                                  per_chunk_3247) *\n                                                                 num_threads_3190 +\n                                                                 squot32(slice_offset_3206 +\n                                                                         i_3212,\n                                                                         per_chunk_3247)) *\n                                                                4];\n            int32_t binop_param_y_3217 = *(__global\n                                           int32_t *) &mem_3291[((slice_offset_3206 +\n                                                                  i_3212 -\n                                                                  squot32(slice_offset_3206 +\n                                                                          i_3212,\n                                                                          per_chunk_3259) *\n                                                                  per_chunk_3259) *\n                                                                 num_threads_3190 +\n                                                                 squot32(slice_offset_3206 +\n                                                                         i_3212,\n                                                                         per_chunk_3259)) *\n                                                                4];\n            int32_t res_3219 = binop_param_x_3216 - binop_param_y_3217;\n            int32_t res_3220 = abs(res_3219);\n            char cond_3221 = slt32(res_3220, acc_3213);\n            int32_t res_3222;\n            \n            if (cond_3221)",
-            " {\n                res_3222 = acc_3213;\n            } else {\n                res_3222 = res_3220;\n            }\n            acc_3213 = res_3222;\n        }\n    }\n    res_3210 = acc_3213;\n    barrier(CLK_LOCAL_MEM_FENCE);\n    if (slt32(local_tid_3199, group_sizze_3183) && 1) {\n        *(__local int32_t *) &mem_3294[local_tid_3199 * 4] = res_3210;\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t skip_waves_3314;\n    int32_t my_index_3226;\n    int32_t other_offset_3227;\n    int32_t not_curried_3228;\n    int32_t not_curried_3229;\n    \n    my_index_3226 = local_tid_3199;\n    other_offset_3227 = 0;\n    not_curried_3228 = *(__local int32_t *) &mem_3294[(local_tid_3199 +\n                                                       other_offset_3227) * 4];\n    other_offset_3227 = 1;\n    while (slt32(other_offset_3227, wave_sizze_3309)) {\n        if (slt32(local_tid_3199 + other_offset_3227, group_sizze_3183) &&\n            ((local_tid_3199 - squot32(local_tid_3199, wave_sizze_3309) *\n              wave_sizze_3309) & (2 * other_offset_3227 - 1)) == 0) {\n            // read array element\n            {\n                not_curried_3229 = *(volatile __local\n                                     int32_t *) &mem_3294[(local_tid_3199 +\n                                                           other_offset_3227) *\n                                                          4];\n            }\n            \n            char cond_3230;\n            int32_t res_3231;\n            \n            if (thread_active_3311) {\n                cond_3230 = slt32(not_curried_3229, not_curried_3228);\n                if (cond_3230) {\n                    res_3231 = not_curried_3228;\n                } else {\n                    res_3231 = not_curried_3229;\n                }\n            }\n            not_curried_3228 = res_3231;\n            *(volatile __local int32_t *) &mem_3294[local_tid_3199 * 4] =\n                not_curried_3228;\n        }\n        other_offset_3227 *= 2;\n    }\n    skip_waves_3314 = 1;\n  ",
-            "  while (slt32(skip_waves_3314, squot32(group_sizze_3310 + wave_sizze_3309 -\n                                          1, wave_sizze_3309))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        other_offset_3227 = skip_waves_3314 * wave_sizze_3309;\n        if ((local_tid_3199 - squot32(local_tid_3199, wave_sizze_3309) *\n             wave_sizze_3309) == 0 && (squot32(local_tid_3199,\n                                               wave_sizze_3309) & (2 *\n                                                                   skip_waves_3314 -\n                                                                   1)) == 0) {\n            // read array element\n            {\n                not_curried_3229 = *(__local\n                                     int32_t *) &mem_3294[(local_tid_3199 +\n                                                           other_offset_3227) *\n                                                          4];\n            }\n            \n            char cond_3230;\n            int32_t res_3231;\n            \n            if (thread_active_3311) {\n                cond_3230 = slt32(not_curried_3229, not_curried_3228);\n                if (cond_3230) {\n                    res_3231 = not_curried_3228;\n                } else {\n                    res_3231 = not_curried_3229;\n                }\n            }\n            not_curried_3228 = res_3231;\n            *(__local int32_t *) &mem_3294[local_tid_3199 * 4] =\n                not_curried_3228;\n        }\n        skip_waves_3314 *= 2;\n    }\n    final_result_3225 = not_curried_3228;\n    if (local_tid_3199 == 0) {\n        *(__global int32_t *) &mem_3297[group_id_3200 * 4] = final_result_3225;\n    }\n}\n__kernel void fut_kernel_map_transpose_i32(__global int32_t *odata,\n                                           uint odata_offset, __global\n                                           int32_t *idata, uint idata_offset,\n                                           uint width, uint height,\n                                           uint",
-            " input_size, uint output_size,\n                                           __local int32_t *block)\n{\n    uint x_index;\n    uint y_index;\n    uint our_array_offset;\n    \n    // Adjust the input and output arrays with the basic offset.\n    odata += odata_offset / sizeof(int32_t);\n    idata += idata_offset / sizeof(int32_t);\n    // Adjust the input and output arrays for the third dimension.\n    our_array_offset = get_global_id(2) * width * height;\n    odata += our_array_offset;\n    idata += our_array_offset;\n    // read the matrix tile into shared memory\n    x_index = get_global_id(0);\n    y_index = get_global_id(1);\n    \n    uint index_in = y_index * width + x_index;\n    \n    if ((x_index < width && y_index < height) && index_in < input_size)\n        block[get_local_id(1) * (FUT_BLOCK_DIM + 1) + get_local_id(0)] =\n            idata[index_in];\n    barrier(CLK_LOCAL_MEM_FENCE);\n    // Scatter the transposed matrix tile to global memory.\n    x_index = get_group_id(1) * FUT_BLOCK_DIM + get_local_id(0);\n    y_index = get_group_id(0) * FUT_BLOCK_DIM + get_local_id(1);\n    \n    uint index_out = y_index * height + x_index;\n    \n    if ((x_index < height && y_index < width) && index_out < output_size)\n        odata[index_out] = block[get_local_id(0) * (FUT_BLOCK_DIM + 1) +\n                                 get_local_id(1)];\n}\n__kernel void fut_kernel_map_transpose_lowheight_i32(__global int32_t *odata,\n                                                     uint odata_offset, __global\n                                                     int32_t *idata,\n                                                     uint idata_offset,\n                                                     uint width, uint height,\n                                                     uint input_size,\n                                                     uint output_size,\n                                                     uint mulx, __local\n                                                     int32_t *block)\n{\n   ",
-            " uint x_index;\n    uint y_index;\n    uint our_array_offset;\n    \n    // Adjust the input and output arrays with the basic offset.\n    odata += odata_offset / sizeof(int32_t);\n    idata += idata_offset / sizeof(int32_t);\n    // Adjust the input and output arrays for the third dimension.\n    our_array_offset = get_global_id(2) * width * height;\n    odata += our_array_offset;\n    idata += our_array_offset;\n    // read the matrix tile into shared memory\n    x_index = get_group_id(0) * FUT_BLOCK_DIM * mulx + get_local_id(0) +\n        get_local_id(1) % mulx * FUT_BLOCK_DIM;\n    y_index = get_group_id(1) * FUT_BLOCK_DIM + get_local_id(1) / mulx;\n    \n    uint index_in = y_index * width + x_index;\n    \n    if ((x_index < width && y_index < height) && index_in < input_size)\n        block[get_local_id(1) * (FUT_BLOCK_DIM + 1) + get_local_id(0)] =\n            idata[index_in];\n    barrier(CLK_LOCAL_MEM_FENCE);\n    // Scatter the transposed matrix tile to global memory.\n    x_index = get_group_id(1) * FUT_BLOCK_DIM + get_local_id(0) / mulx;\n    y_index = get_group_id(0) * FUT_BLOCK_DIM * mulx + get_local_id(1) +\n        get_local_id(0) % mulx * FUT_BLOCK_DIM;\n    \n    uint index_out = y_index * height + x_index;\n    \n    if ((x_index < height && y_index < width) && index_out < output_size)\n        odata[index_out] = block[get_local_id(0) * (FUT_BLOCK_DIM + 1) +\n                                 get_local_id(1)];\n}\n__kernel void fut_kernel_map_transpose_lowwidth_i32(__global int32_t *odata,\n                                                    uint odata_offset, __global\n                                                    int32_t *idata,\n                                                    uint idata_offset,\n                                                    uint width, uint height,\n                                                    uint input_size,\n                                                    uint output_size, uint muly,\n                                                    _",
-            "_local int32_t *block)\n{\n    uint x_index;\n    uint y_index;\n    uint our_array_offset;\n    \n    // Adjust the input and output arrays with the basic offset.\n    odata += odata_offset / sizeof(int32_t);\n    idata += idata_offset / sizeof(int32_t);\n    // Adjust the input and output arrays for the third dimension.\n    our_array_offset = get_global_id(2) * width * height;\n    odata += our_array_offset;\n    idata += our_array_offset;\n    // read the matrix tile into shared memory\n    x_index = get_group_id(0) * FUT_BLOCK_DIM + get_local_id(0) / muly;\n    y_index = get_group_id(1) * FUT_BLOCK_DIM * muly + get_local_id(1) +\n        get_local_id(0) % muly * FUT_BLOCK_DIM;\n    \n    uint index_in = y_index * width + x_index;\n    \n    if ((x_index < width && y_index < height) && index_in < input_size)\n        block[get_local_id(1) * (FUT_BLOCK_DIM + 1) + get_local_id(0)] =\n            idata[index_in];\n    barrier(CLK_LOCAL_MEM_FENCE);\n    // Scatter the transposed matrix tile to global memory.\n    x_index = get_group_id(1) * FUT_BLOCK_DIM * muly + get_local_id(0) +\n        get_local_id(1) % muly * FUT_BLOCK_DIM;\n    y_index = get_group_id(0) * FUT_BLOCK_DIM + get_local_id(1) / muly;\n    \n    uint index_out = y_index * height + x_index;\n    \n    if ((x_index < height && y_index < width) && index_out < output_size)\n        odata[index_out] = block[get_local_id(0) * (FUT_BLOCK_DIM + 1) +\n                                 get_local_id(1)];\n}\n__kernel void reduce_kernel_3234(__local volatile int64_t *mem_aligned_0,\n                                 int32_t num_groups_3189, __global\n                                 unsigned char *mem_3297, __global\n                                 unsigned char *mem_3303)\n{\n    __local volatile char *restrict mem_3300 = mem_aligned_0;\n    int32_t wave_sizze_3315;\n    int32_t group_sizze_3316;\n    char thread_active_3317;\n    int32_t global_tid_3234;\n    int32_t local_tid_3235;\n    int32_t group_id_3236;\n    \n    global_tid_3234 = get_global_id(0);\n ",
-            "   local_tid_3235 = get_local_id(0);\n    group_sizze_3316 = get_local_size(0);\n    wave_sizze_3315 = LOCKSTEP_WIDTH;\n    group_id_3236 = get_group_id(0);\n    thread_active_3317 = 1;\n    \n    char in_bounds_3237;\n    \n    if (thread_active_3317) {\n        in_bounds_3237 = slt32(local_tid_3235, num_groups_3189);\n    }\n    \n    int32_t final_result_3241;\n    \n    barrier(CLK_LOCAL_MEM_FENCE);\n    if (slt32(local_tid_3235, group_sizze_3183) && 1) {\n        int32_t elem_3239;\n        \n        if (in_bounds_3237) {\n            int32_t x_3238 = *(__global int32_t *) &mem_3297[global_tid_3234 *\n                                                             4];\n            \n            elem_3239 = x_3238;\n        } else {\n            elem_3239 = 0;\n        }\n        *(__local int32_t *) &mem_3300[local_tid_3235 * 4] = elem_3239;\n    }\n    barrier(CLK_LOCAL_MEM_FENCE);\n    \n    int32_t skip_waves_3318;\n    int32_t not_curried_3161;\n    int32_t not_curried_3162;\n    int32_t my_index_3196;\n    int32_t other_offset_3197;\n    \n    my_index_3196 = local_tid_3235;\n    other_offset_3197 = 0;\n    not_curried_3161 = *(__local int32_t *) &mem_3300[(local_tid_3235 +\n                                                       other_offset_3197) * 4];\n    other_offset_3197 = 1;\n    while (slt32(other_offset_3197, wave_sizze_3315)) {\n        if (slt32(local_tid_3235 + other_offset_3197, group_sizze_3183) &&\n            ((local_tid_3235 - squot32(local_tid_3235, wave_sizze_3315) *\n              wave_sizze_3315) & (2 * other_offset_3197 - 1)) == 0) {\n            // read array element\n            {\n                not_curried_3162 = *(volatile __local\n                                     int32_t *) &mem_3300[(local_tid_3235 +\n                                                           other_offset_3197) *\n                                                          4];\n            }\n            \n            char cond_3163;\n            int32_t res_3164;\n            \n            if (thread_active_3317) {\n",
-            "                cond_3163 = slt32(not_curried_3162, not_curried_3161);\n                if (cond_3163) {\n                    res_3164 = not_curried_3161;\n                } else {\n                    res_3164 = not_curried_3162;\n                }\n            }\n            not_curried_3161 = res_3164;\n            *(volatile __local int32_t *) &mem_3300[local_tid_3235 * 4] =\n                not_curried_3161;\n        }\n        other_offset_3197 *= 2;\n    }\n    skip_waves_3318 = 1;\n    while (slt32(skip_waves_3318, squot32(group_sizze_3316 + wave_sizze_3315 -\n                                          1, wave_sizze_3315))) {\n        barrier(CLK_LOCAL_MEM_FENCE);\n        other_offset_3197 = skip_waves_3318 * wave_sizze_3315;\n        if ((local_tid_3235 - squot32(local_tid_3235, wave_sizze_3315) *\n             wave_sizze_3315) == 0 && (squot32(local_tid_3235,\n                                               wave_sizze_3315) & (2 *\n                                                                   skip_waves_3318 -\n                                                                   1)) == 0) {\n            // read array element\n            {\n                not_curried_3162 = *(__local\n                                     int32_t *) &mem_3300[(local_tid_3235 +\n                                                           other_offset_3197) *\n                                                          4];\n            }\n            \n            char cond_3163;\n            int32_t res_3164;\n            \n            if (thread_active_3317) {\n                cond_3163 = slt32(not_curried_3162, not_curried_3161);\n                if (cond_3163) {\n                    res_3164 = not_curried_3161;\n                } else {\n                    res_3164 = not_curried_3162;\n                }\n            }\n            not_curried_3161 = res_3164;\n            *(__local int32_t *) &mem_3300[local_tid_3235 * 4] =\n                not_curried_3161;\n        }\n        skip_waves_3318 *= 2;\n    }\n    final_",
-            "result_3241 = not_curried_3161;\n    if (local_tid_3235 == 0) {\n        *(__global int32_t *) &mem_3303[group_id_3236 * 4] = final_result_3241;\n    }\n}\n",
-            NULL};
-struct memblock_device {
-    int *references;
-    cl_mem mem;
-    int64_t size;
-} ;
-struct memblock_local {
-    int *references;
-    unsigned char mem;
-    int64_t size;
-} ;
 struct memblock {
     int *references;
     char *mem;
     int64_t size;
 } ;
 struct futhark_context_config {
-    struct opencl_config opencl;
+    int debugging;
 } ;
 struct futhark_context_config *futhark_context_config_new()
 {
@@ -1648,8 +1130,7 @@ struct futhark_context_config *futhark_context_config_new()
     
     if (cfg == NULL)
         return NULL;
-    opencl_config_init(&cfg->opencl);
-    cfg->opencl.transpose_block_dim = 16;
+    cfg->debugging = 0;
     return cfg;
 }
 void futhark_context_config_free(struct futhark_context_config *cfg)
@@ -1657,177 +1138,26 @@ void futhark_context_config_free(struct futhark_context_config *cfg)
     free(cfg);
 }
 void futhark_context_config_set_debugging(struct futhark_context_config *cfg,
-                                          int flag)
+                                          int detail)
 {
-    cfg->opencl.debugging = flag;
-}
-void futhark_context_config_set_device(struct futhark_context_config *cfg, const
-                                       char *s)
-{
-    set_preferred_device(&cfg->opencl, s);
-}
-void futhark_context_config_set_platform(struct futhark_context_config *cfg,
-                                         const char *s)
-{
-    set_preferred_platform(&cfg->opencl, s);
-}
-void futhark_context_config_dump_program_to(struct futhark_context_config *cfg,
-                                            const char *path)
-{
-    cfg->opencl.dump_program_to = path;
-}
-void futhark_context_config_load_program_from(struct futhark_context_config *cfg,
-                                              const char *path)
-{
-    cfg->opencl.load_program_from = path;
-}
-void futhark_context_config_set_group_size(struct futhark_context_config *cfg,
-                                           int size)
-{
-    cfg->opencl.group_size = size;
-}
-void futhark_context_config_set_num_groups(struct futhark_context_config *cfg,
-                                           int num)
-{
-    cfg->opencl.num_groups = num;
+    cfg->debugging = detail;
 }
 struct futhark_context {
     int detail_memory;
     int debugging;
-    int64_t peak_mem_usage_device;
-    int64_t cur_mem_usage_device;
-    int64_t peak_mem_usage_local;
-    int64_t cur_mem_usage_local;
     int64_t peak_mem_usage_default;
     int64_t cur_mem_usage_default;
-    int total_runs;
-    int total_runtime;
-    cl_kernel chunked_reduce_kernel_3198;
-    int chunked_reduce_kernel_3198_total_runtime;
-    int chunked_reduce_kernel_3198_runs;
-    cl_kernel fut_kernel_map_transpose_i32;
-    int fut_kernel_map_transpose_i32_total_runtime;
-    int fut_kernel_map_transpose_i32_runs;
-    cl_kernel fut_kernel_map_transpose_lowheight_i32;
-    int fut_kernel_map_transpose_lowheight_i32_total_runtime;
-    int fut_kernel_map_transpose_lowheight_i32_runs;
-    cl_kernel fut_kernel_map_transpose_lowwidth_i32;
-    int fut_kernel_map_transpose_lowwidth_i32_total_runtime;
-    int fut_kernel_map_transpose_lowwidth_i32_runs;
-    cl_kernel reduce_kernel_3234;
-    int reduce_kernel_3234_total_runtime;
-    int reduce_kernel_3234_runs;
-    struct opencl_context opencl;
 } ;
-void setup_opencl_and_load_kernels(struct futhark_context *ctx)
-{
-    cl_int error;
-    cl_program prog = setup_opencl(&ctx->opencl, opencl_program);
-    
-    {
-        ctx->chunked_reduce_kernel_3198 = clCreateKernel(prog,
-                                                         "chunked_reduce_kernel_3198",
-                                                         &error);
-        assert(error == 0);
-        if (ctx->debugging)
-            fprintf(stderr, "Created kernel %s.\n",
-                    "chunked_reduce_kernel_3198");
-    }
-    {
-        ctx->fut_kernel_map_transpose_i32 = clCreateKernel(prog,
-                                                           "fut_kernel_map_transpose_i32",
-                                                           &error);
-        assert(error == 0);
-        if (ctx->debugging)
-            fprintf(stderr, "Created kernel %s.\n",
-                    "fut_kernel_map_transpose_i32");
-    }
-    {
-        ctx->fut_kernel_map_transpose_lowheight_i32 = clCreateKernel(prog,
-                                                                     "fut_kernel_map_transpose_lowheight_i32",
-                                                                     &error);
-        assert(error == 0);
-        if (ctx->debugging)
-            fprintf(stderr, "Created kernel %s.\n",
-                    "fut_kernel_map_transpose_lowheight_i32");
-    }
-    {
-        ctx->fut_kernel_map_transpose_lowwidth_i32 = clCreateKernel(prog,
-                                                                    "fut_kernel_map_transpose_lowwidth_i32",
-                                                                    &error);
-        assert(error == 0);
-        if (ctx->debugging)
-            fprintf(stderr, "Created kernel %s.\n",
-                    "fut_kernel_map_transpose_lowwidth_i32");
-    }
-    {
-        ctx->reduce_kernel_3234 = clCreateKernel(prog, "reduce_kernel_3234",
-                                                 &error);
-        assert(error == 0);
-        if (ctx->debugging)
-            fprintf(stderr, "Created kernel %s.\n", "reduce_kernel_3234");
-    }
-}
-void post_opencl_setup(struct opencl_context *ctx,
-                       struct opencl_device_option *option)
-{
-    if ((ctx->lockstep_width == 0 && strstr(option->platform_name,
-                                            "NVIDIA CUDA") != NULL) &&
-        option->device_type == CL_DEVICE_TYPE_GPU)
-        ctx->lockstep_width = 32;
-    if ((ctx->lockstep_width == 0 && strstr(option->platform_name,
-                                            "AMD Accelerated Parallel Processing") !=
-         NULL) && option->device_type == CL_DEVICE_TYPE_GPU)
-        ctx->lockstep_width = 64;
-    if ((ctx->lockstep_width == 0 && strstr(option->platform_name, "") !=
-         NULL) && option->device_type == CL_DEVICE_TYPE_GPU)
-        ctx->lockstep_width = 1;
-    if ((ctx->cfg.num_groups == 0 && strstr(option->platform_name, "") !=
-         NULL) && option->device_type == CL_DEVICE_TYPE_GPU)
-        ctx->cfg.num_groups = 128;
-    if ((ctx->cfg.group_size == 0 && strstr(option->platform_name, "") !=
-         NULL) && option->device_type == CL_DEVICE_TYPE_GPU)
-        ctx->cfg.group_size = 256;
-    if ((ctx->lockstep_width == 0 && strstr(option->platform_name, "") !=
-         NULL) && option->device_type == CL_DEVICE_TYPE_CPU)
-        ctx->lockstep_width = 1;
-    if ((ctx->cfg.num_groups == 0 && strstr(option->platform_name, "") !=
-         NULL) && option->device_type == CL_DEVICE_TYPE_CPU)
-        clGetDeviceInfo(ctx->device, CL_DEVICE_MAX_COMPUTE_UNITS,
-                        sizeof(ctx->cfg.num_groups), &ctx->cfg.num_groups,
-                        NULL);
-    if ((ctx->cfg.group_size == 0 && strstr(option->platform_name, "") !=
-         NULL) && option->device_type == CL_DEVICE_TYPE_CPU)
-        ctx->cfg.group_size = 32;
-}
 struct futhark_context *futhark_context_new(struct futhark_context_config *cfg)
 {
     struct futhark_context *ctx = malloc(sizeof(struct futhark_context));
     
     if (ctx == NULL)
         return NULL;
-    ctx->detail_memory = cfg->opencl.debugging;
-    ctx->debugging = cfg->opencl.debugging;
-    ctx->opencl.cfg = cfg->opencl;
-    ctx->peak_mem_usage_device = 0;
-    ctx->cur_mem_usage_device = 0;
-    ctx->peak_mem_usage_local = 0;
-    ctx->cur_mem_usage_local = 0;
+    ctx->detail_memory = cfg->debugging;
+    ctx->debugging = cfg->debugging;
     ctx->peak_mem_usage_default = 0;
     ctx->cur_mem_usage_default = 0;
-    ctx->total_runs = 0;
-    ctx->total_runtime = 0;
-    ctx->chunked_reduce_kernel_3198_total_runtime = 0;
-    ctx->chunked_reduce_kernel_3198_runs = 0;
-    ctx->fut_kernel_map_transpose_i32_total_runtime = 0;
-    ctx->fut_kernel_map_transpose_i32_runs = 0;
-    ctx->fut_kernel_map_transpose_lowheight_i32_total_runtime = 0;
-    ctx->fut_kernel_map_transpose_lowheight_i32_runs = 0;
-    ctx->fut_kernel_map_transpose_lowwidth_i32_total_runtime = 0;
-    ctx->fut_kernel_map_transpose_lowwidth_i32_runs = 0;
-    ctx->reduce_kernel_3234_total_runtime = 0;
-    ctx->reduce_kernel_3234_runs = 0;
-    setup_opencl_and_load_kernels(ctx);
     return ctx;
 }
 void futhark_context_free(struct futhark_context *ctx)
@@ -1836,108 +1166,7 @@ void futhark_context_free(struct futhark_context *ctx)
 }
 int futhark_context_sync(struct futhark_context *ctx)
 {
-    OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
     return 0;
-}
-static void memblock_unref_device(struct futhark_context *ctx,
-                                  struct memblock_device *block)
-{
-    if (block->references != NULL) {
-        *block->references -= 1;
-        if (ctx->detail_memory)
-            fprintf(stderr,
-                    "Unreferencing block in space 'device': %d references remaining.\n",
-                    *block->references);
-        if (*block->references == 0) {
-            ctx->cur_mem_usage_device -= block->size;
-            OPENCL_SUCCEED(clReleaseMemObject(block->mem));
-            free(block->references);
-            block->references = NULL;
-            if (ctx->detail_memory)
-                fprintf(stderr, "%ld bytes freed (now allocated: %ld bytes)\n",
-                        block->size, ctx->cur_mem_usage_device);
-        }
-    }
-}
-static void memblock_alloc_device(struct futhark_context *ctx,
-                                  struct memblock_device *block, int32_t size)
-{
-    memblock_unref_device(ctx, block);
-    
-    cl_int clCreateBuffer_succeeded_3319;
-    
-    block->mem = clCreateBuffer(ctx->opencl.ctx, CL_MEM_READ_WRITE, size >
-                                0 ? size : 1, NULL,
-                                &clCreateBuffer_succeeded_3319);
-    OPENCL_SUCCEED(clCreateBuffer_succeeded_3319);
-    block->references = (int *) malloc(sizeof(int));
-    *block->references = 1;
-    block->size = size;
-    ctx->cur_mem_usage_device += size;
-    if (ctx->detail_memory)
-        fprintf(stderr,
-                "Allocated %d bytes in space 'device' (now allocated: %ld bytes)",
-                size, ctx->cur_mem_usage_device);
-    if (ctx->cur_mem_usage_device > ctx->peak_mem_usage_device) {
-        ctx->peak_mem_usage_device = ctx->cur_mem_usage_device;
-        if (ctx->detail_memory)
-            fprintf(stderr, " (new peak).\n");
-    } else if (ctx->detail_memory)
-        fprintf(stderr, ".\n");
-}
-static void memblock_set_device(struct futhark_context *ctx,
-                                struct memblock_device *lhs,
-                                struct memblock_device *rhs)
-{
-    memblock_unref_device(ctx, lhs);
-    (*rhs->references)++;
-    *lhs = *rhs;
-}
-static void memblock_unref_local(struct futhark_context *ctx,
-                                 struct memblock_local *block)
-{
-    if (block->references != NULL) {
-        *block->references -= 1;
-        if (ctx->detail_memory)
-            fprintf(stderr,
-                    "Unreferencing block in space 'local': %d references remaining.\n",
-                    *block->references);
-        if (*block->references == 0) {
-            ctx->cur_mem_usage_local -= block->size;
-            free(block->references);
-            block->references = NULL;
-            if (ctx->detail_memory)
-                fprintf(stderr, "%ld bytes freed (now allocated: %ld bytes)\n",
-                        block->size, ctx->cur_mem_usage_local);
-        }
-    }
-}
-static void memblock_alloc_local(struct futhark_context *ctx,
-                                 struct memblock_local *block, int32_t size)
-{
-    memblock_unref_local(ctx, block);
-    block->references = (int *) malloc(sizeof(int));
-    *block->references = 1;
-    block->size = size;
-    ctx->cur_mem_usage_local += size;
-    if (ctx->detail_memory)
-        fprintf(stderr,
-                "Allocated %d bytes in space 'local' (now allocated: %ld bytes)",
-                size, ctx->cur_mem_usage_local);
-    if (ctx->cur_mem_usage_local > ctx->peak_mem_usage_local) {
-        ctx->peak_mem_usage_local = ctx->cur_mem_usage_local;
-        if (ctx->detail_memory)
-            fprintf(stderr, " (new peak).\n");
-    } else if (ctx->detail_memory)
-        fprintf(stderr, ".\n");
-}
-static void memblock_set_local(struct futhark_context *ctx,
-                               struct memblock_local *lhs,
-                               struct memblock_local *rhs)
-{
-    memblock_unref_local(ctx, lhs);
-    (*rhs->references)++;
-    *lhs = *rhs;
 }
 static void memblock_unref(struct futhark_context *ctx, struct memblock *block)
 {
@@ -1988,83 +1217,19 @@ static void memblock_set(struct futhark_context *ctx, struct memblock *lhs,
 void futhark_debugging_report(struct futhark_context *ctx)
 {
     if (ctx->detail_memory) {
-        fprintf(stderr, "Peak memory usage for space 'device': %ld bytes.\n",
-                ctx->peak_mem_usage_device);
-        fprintf(stderr, "Peak memory usage for space 'local': %ld bytes.\n",
-                ctx->peak_mem_usage_local);
         fprintf(stderr, "Peak memory usage for default space: %ld bytes.\n",
                 ctx->peak_mem_usage_default);
     }
-    if (ctx->debugging) {
-        fprintf(stderr,
-                "Kernel chunked_reduce_kernel_3198             executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
-                ctx->chunked_reduce_kernel_3198_runs,
-                (long) ctx->chunked_reduce_kernel_3198_total_runtime /
-                (ctx->chunked_reduce_kernel_3198_runs !=
-                 0 ? ctx->chunked_reduce_kernel_3198_runs : 1),
-                (long) ctx->chunked_reduce_kernel_3198_total_runtime);
-        ctx->total_runtime += ctx->chunked_reduce_kernel_3198_total_runtime;
-        ctx->total_runs += ctx->chunked_reduce_kernel_3198_runs;
-        fprintf(stderr,
-                "Kernel fut_kernel_map_transpose_i32           executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
-                ctx->fut_kernel_map_transpose_i32_runs,
-                (long) ctx->fut_kernel_map_transpose_i32_total_runtime /
-                (ctx->fut_kernel_map_transpose_i32_runs !=
-                 0 ? ctx->fut_kernel_map_transpose_i32_runs : 1),
-                (long) ctx->fut_kernel_map_transpose_i32_total_runtime);
-        ctx->total_runtime += ctx->fut_kernel_map_transpose_i32_total_runtime;
-        ctx->total_runs += ctx->fut_kernel_map_transpose_i32_runs;
-        fprintf(stderr,
-                "Kernel fut_kernel_map_transpose_lowheight_i32 executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
-                ctx->fut_kernel_map_transpose_lowheight_i32_runs,
-                (long) ctx->fut_kernel_map_transpose_lowheight_i32_total_runtime /
-                (ctx->fut_kernel_map_transpose_lowheight_i32_runs !=
-                 0 ? ctx->fut_kernel_map_transpose_lowheight_i32_runs : 1),
-                (long) ctx->fut_kernel_map_transpose_lowheight_i32_total_runtime);
-        ctx->total_runtime +=
-            ctx->fut_kernel_map_transpose_lowheight_i32_total_runtime;
-        ctx->total_runs += ctx->fut_kernel_map_transpose_lowheight_i32_runs;
-        fprintf(stderr,
-                "Kernel fut_kernel_map_transpose_lowwidth_i32  executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
-                ctx->fut_kernel_map_transpose_lowwidth_i32_runs,
-                (long) ctx->fut_kernel_map_transpose_lowwidth_i32_total_runtime /
-                (ctx->fut_kernel_map_transpose_lowwidth_i32_runs !=
-                 0 ? ctx->fut_kernel_map_transpose_lowwidth_i32_runs : 1),
-                (long) ctx->fut_kernel_map_transpose_lowwidth_i32_total_runtime);
-        ctx->total_runtime +=
-            ctx->fut_kernel_map_transpose_lowwidth_i32_total_runtime;
-        ctx->total_runs += ctx->fut_kernel_map_transpose_lowwidth_i32_runs;
-        fprintf(stderr,
-                "Kernel reduce_kernel_3234                     executed %6d times, with average runtime: %6ldus\tand total runtime: %6ldus\n",
-                ctx->reduce_kernel_3234_runs,
-                (long) ctx->reduce_kernel_3234_total_runtime /
-                (ctx->reduce_kernel_3234_runs !=
-                 0 ? ctx->reduce_kernel_3234_runs : 1),
-                (long) ctx->reduce_kernel_3234_total_runtime);
-        ctx->total_runtime += ctx->reduce_kernel_3234_total_runtime;
-        ctx->total_runs += ctx->reduce_kernel_3234_runs;
-        if (ctx->debugging)
-            fprintf(stderr, "Ran %d kernels with cumulative runtime: %6ldus\n",
-                    ctx->total_runs, ctx->total_runtime);
-    }
+    if (ctx->debugging) { }
 }
 struct futrts_int32_t {
     int32_t v0;
 } ;
-struct futrts_ { } ;
-static struct futrts_
-futrts_map_transpose_opencl_i32(struct futhark_context *ctx,
-                                struct memblock_device destmem_0,
-                                int32_t destoffset_1,
-                                struct memblock_device srcmem_2,
-                                int32_t srcoffset_3, int32_t num_arrays_4,
-                                int32_t x_elems_5, int32_t y_elems_6,
-                                int32_t in_elems_7, int32_t out_elems_8);
 static struct futrts_int32_t futrts_main(struct futhark_context *ctx,
-                                         int64_t xs_mem_sizze_3266,
-                                         struct memblock_device xs_mem_3267,
-                                         int64_t ys_mem_sizze_3268,
-                                         struct memblock_device ys_mem_3269,
+                                         int64_t xs_mem_sizze_3180,
+                                         struct memblock xs_mem_3181,
+                                         int64_t ys_mem_sizze_3182,
+                                         struct memblock ys_mem_3183,
                                          int32_t sizze_3145,
                                          int32_t sizze_3146);
 static inline int8_t add8(int8_t x, int8_t y)
@@ -2975,558 +2140,45 @@ static inline double futrts_from_bits64(int64_t x)
     p.f = x;
     return p.t;
 }
-static
-struct futrts_ futrts_map_transpose_opencl_i32(struct futhark_context *ctx,
-                                               struct memblock_device destmem_0,
-                                               int32_t destoffset_1,
-                                               struct memblock_device srcmem_2,
-                                               int32_t srcoffset_3,
-                                               int32_t num_arrays_4,
-                                               int32_t x_elems_5,
-                                               int32_t y_elems_6,
-                                               int32_t in_elems_7,
-                                               int32_t out_elems_8)
-{
-    if (in_elems_7 == out_elems_8 && ((num_arrays_4 == 1 || x_elems_5 *
-                                       y_elems_6 == in_elems_7) && (x_elems_5 ==
-                                                                    1 ||
-                                                                    y_elems_6 ==
-                                                                    1))) {
-        if (in_elems_7 * sizeof(int32_t) > 0) {
-            OPENCL_SUCCEED(clEnqueueCopyBuffer(ctx->opencl.queue, srcmem_2.mem,
-                                               destmem_0.mem, srcoffset_3,
-                                               destoffset_1, in_elems_7 *
-                                               sizeof(int32_t), 0, NULL, NULL));
-            if (ctx->debugging)
-                OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-        }
-    } else {
-        if (sle32(x_elems_5, squot32(16, 2)) && slt32(16, y_elems_6)) {
-            int32_t muly_9 = squot32(16, x_elems_5);
-            int32_t new_height_10;
-            
-            new_height_10 = squot32(y_elems_6 + muly_9 - 1, muly_9);
-            OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowwidth_i32,
-                                          0, sizeof(destmem_0.mem),
-                                          &destmem_0.mem));
-            OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowwidth_i32,
-                                          1, sizeof(destoffset_1),
-                                          &destoffset_1));
-            OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowwidth_i32,
-                                          2, sizeof(srcmem_2.mem),
-                                          &srcmem_2.mem));
-            OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowwidth_i32,
-                                          3, sizeof(srcoffset_3),
-                                          &srcoffset_3));
-            OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowwidth_i32,
-                                          4, sizeof(x_elems_5), &x_elems_5));
-            OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowwidth_i32,
-                                          5, sizeof(y_elems_6), &y_elems_6));
-            OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowwidth_i32,
-                                          6, sizeof(in_elems_7), &in_elems_7));
-            OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowwidth_i32,
-                                          7, sizeof(out_elems_8),
-                                          &out_elems_8));
-            OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowwidth_i32,
-                                          8, sizeof(muly_9), &muly_9));
-            OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowwidth_i32,
-                                          9, 272 * sizeof(int32_t), NULL));
-            if (1 * (x_elems_5 + srem32(16 - srem32(x_elems_5, 16), 16)) *
-                (new_height_10 + srem32(16 - srem32(new_height_10, 16), 16)) *
-                num_arrays_4 != 0) {
-                const size_t global_work_sizze_3321[3] = {x_elems_5 +
-                                                          srem32(16 -
-                                                                 srem32(x_elems_5,
-                                                                        16),
-                                                                 16),
-                                                          new_height_10 +
-                                                          srem32(16 -
-                                                                 srem32(new_height_10,
-                                                                        16),
-                                                                 16),
-                                                          num_arrays_4};
-                const size_t local_work_sizze_3325[3] = {16, 16, 1};
-                int64_t time_start_3322, time_end_3323;
-                
-                if (ctx->debugging) {
-                    fprintf(stderr, "Launching %s with global work size [",
-                            "fut_kernel_map_transpose_lowwidth_i32");
-                    fprintf(stderr, "%zu", global_work_sizze_3321[0]);
-                    fprintf(stderr, ", ");
-                    fprintf(stderr, "%zu", global_work_sizze_3321[1]);
-                    fprintf(stderr, ", ");
-                    fprintf(stderr, "%zu", global_work_sizze_3321[2]);
-                    fprintf(stderr, "].\n");
-                    time_start_3322 = get_wall_time();
-                }
-                OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
-                                                      ctx->fut_kernel_map_transpose_lowwidth_i32,
-                                                      3, NULL,
-                                                      global_work_sizze_3321,
-                                                      local_work_sizze_3325, 0,
-                                                      NULL, NULL));
-                if (ctx->debugging) {
-                    OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-                    time_end_3323 = get_wall_time();
-                    
-                    long time_diff_3324 = time_end_3323 - time_start_3322;
-                    
-                    ctx->fut_kernel_map_transpose_lowwidth_i32_total_runtime +=
-                        time_diff_3324;
-                    ctx->fut_kernel_map_transpose_lowwidth_i32_runs++;
-                    fprintf(stderr, "kernel %s runtime: %ldus\n",
-                            "fut_kernel_map_transpose_lowwidth_i32",
-                            (int) time_diff_3324);
-                }
-            }
-        } else {
-            if (sle32(y_elems_6, squot32(16, 2)) && slt32(16, x_elems_5)) {
-                int32_t mulx_11 = squot32(16, y_elems_6);
-                int32_t new_width_12;
-                
-                new_width_12 = squot32(x_elems_5 + mulx_11 - 1, mulx_11);
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowheight_i32,
-                                              0, sizeof(destmem_0.mem),
-                                              &destmem_0.mem));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowheight_i32,
-                                              1, sizeof(destoffset_1),
-                                              &destoffset_1));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowheight_i32,
-                                              2, sizeof(srcmem_2.mem),
-                                              &srcmem_2.mem));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowheight_i32,
-                                              3, sizeof(srcoffset_3),
-                                              &srcoffset_3));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowheight_i32,
-                                              4, sizeof(x_elems_5),
-                                              &x_elems_5));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowheight_i32,
-                                              5, sizeof(y_elems_6),
-                                              &y_elems_6));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowheight_i32,
-                                              6, sizeof(in_elems_7),
-                                              &in_elems_7));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowheight_i32,
-                                              7, sizeof(out_elems_8),
-                                              &out_elems_8));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowheight_i32,
-                                              8, sizeof(mulx_11), &mulx_11));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_lowheight_i32,
-                                              9, 272 * sizeof(int32_t), NULL));
-                if (1 * (new_width_12 + srem32(16 - srem32(new_width_12, 16),
-                                               16)) * (y_elems_6 + srem32(16 -
-                                                                          srem32(y_elems_6,
-                                                                                 16),
-                                                                          16)) *
-                    num_arrays_4 != 0) {
-                    const size_t global_work_sizze_3326[3] = {new_width_12 +
-                                                              srem32(16 -
-                                                                     srem32(new_width_12,
-                                                                            16),
-                                                                     16),
-                                                              y_elems_6 +
-                                                              srem32(16 -
-                                                                     srem32(y_elems_6,
-                                                                            16),
-                                                                     16),
-                                                              num_arrays_4};
-                    const size_t local_work_sizze_3330[3] = {16, 16, 1};
-                    int64_t time_start_3327, time_end_3328;
-                    
-                    if (ctx->debugging) {
-                        fprintf(stderr, "Launching %s with global work size [",
-                                "fut_kernel_map_transpose_lowheight_i32");
-                        fprintf(stderr, "%zu", global_work_sizze_3326[0]);
-                        fprintf(stderr, ", ");
-                        fprintf(stderr, "%zu", global_work_sizze_3326[1]);
-                        fprintf(stderr, ", ");
-                        fprintf(stderr, "%zu", global_work_sizze_3326[2]);
-                        fprintf(stderr, "].\n");
-                        time_start_3327 = get_wall_time();
-                    }
-                    OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
-                                                          ctx->fut_kernel_map_transpose_lowheight_i32,
-                                                          3, NULL,
-                                                          global_work_sizze_3326,
-                                                          local_work_sizze_3330,
-                                                          0, NULL, NULL));
-                    if (ctx->debugging) {
-                        OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-                        time_end_3328 = get_wall_time();
-                        
-                        long time_diff_3329 = time_end_3328 - time_start_3327;
-                        
-                        ctx->fut_kernel_map_transpose_lowheight_i32_total_runtime +=
-                            time_diff_3329;
-                        ctx->fut_kernel_map_transpose_lowheight_i32_runs++;
-                        fprintf(stderr, "kernel %s runtime: %ldus\n",
-                                "fut_kernel_map_transpose_lowheight_i32",
-                                (int) time_diff_3329);
-                    }
-                }
-            } else {
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_i32,
-                                              0, sizeof(destmem_0.mem),
-                                              &destmem_0.mem));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_i32,
-                                              1, sizeof(destoffset_1),
-                                              &destoffset_1));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_i32,
-                                              2, sizeof(srcmem_2.mem),
-                                              &srcmem_2.mem));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_i32,
-                                              3, sizeof(srcoffset_3),
-                                              &srcoffset_3));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_i32,
-                                              4, sizeof(x_elems_5),
-                                              &x_elems_5));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_i32,
-                                              5, sizeof(y_elems_6),
-                                              &y_elems_6));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_i32,
-                                              6, sizeof(in_elems_7),
-                                              &in_elems_7));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_i32,
-                                              7, sizeof(out_elems_8),
-                                              &out_elems_8));
-                OPENCL_SUCCEED(clSetKernelArg(ctx->fut_kernel_map_transpose_i32,
-                                              8, 272 * sizeof(int32_t), NULL));
-                if (1 * (x_elems_5 + srem32(16 - srem32(x_elems_5, 16), 16)) *
-                    (y_elems_6 + srem32(16 - srem32(y_elems_6, 16), 16)) *
-                    num_arrays_4 != 0) {
-                    const size_t global_work_sizze_3331[3] = {x_elems_5 +
-                                                              srem32(16 -
-                                                                     srem32(x_elems_5,
-                                                                            16),
-                                                                     16),
-                                                              y_elems_6 +
-                                                              srem32(16 -
-                                                                     srem32(y_elems_6,
-                                                                            16),
-                                                                     16),
-                                                              num_arrays_4};
-                    const size_t local_work_sizze_3335[3] = {16, 16, 1};
-                    int64_t time_start_3332, time_end_3333;
-                    
-                    if (ctx->debugging) {
-                        fprintf(stderr, "Launching %s with global work size [",
-                                "fut_kernel_map_transpose_i32");
-                        fprintf(stderr, "%zu", global_work_sizze_3331[0]);
-                        fprintf(stderr, ", ");
-                        fprintf(stderr, "%zu", global_work_sizze_3331[1]);
-                        fprintf(stderr, ", ");
-                        fprintf(stderr, "%zu", global_work_sizze_3331[2]);
-                        fprintf(stderr, "].\n");
-                        time_start_3332 = get_wall_time();
-                    }
-                    OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
-                                                          ctx->fut_kernel_map_transpose_i32,
-                                                          3, NULL,
-                                                          global_work_sizze_3331,
-                                                          local_work_sizze_3335,
-                                                          0, NULL, NULL));
-                    if (ctx->debugging) {
-                        OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-                        time_end_3333 = get_wall_time();
-                        
-                        long time_diff_3334 = time_end_3333 - time_start_3332;
-                        
-                        ctx->fut_kernel_map_transpose_i32_total_runtime +=
-                            time_diff_3334;
-                        ctx->fut_kernel_map_transpose_i32_runs++;
-                        fprintf(stderr, "kernel %s runtime: %ldus\n",
-                                "fut_kernel_map_transpose_i32",
-                                (int) time_diff_3334);
-                    }
-                }
-            }
-        }
-    }
-    
-    struct futrts_ retval_3320;
-    
-    return retval_3320;
-}
 static struct futrts_int32_t futrts_main(struct futhark_context *ctx,
-                                         int64_t xs_mem_sizze_3266,
-                                         struct memblock_device xs_mem_3267,
-                                         int64_t ys_mem_sizze_3268,
-                                         struct memblock_device ys_mem_3269,
+                                         int64_t xs_mem_sizze_3180,
+                                         struct memblock xs_mem_3181,
+                                         int64_t ys_mem_sizze_3182,
+                                         struct memblock ys_mem_3183,
                                          int32_t sizze_3145, int32_t sizze_3146)
 {
-    int32_t scalar_out_3306;
-    int32_t group_sizze_3183;
+    int32_t scalar_out_3184;
+    int32_t res_3160;
+    int32_t acc_3177 = 0;
     
-    group_sizze_3183 = ctx->opencl.cfg.group_size;
-    
-    int32_t max_num_groups_3184;
-    
-    max_num_groups_3184 = ctx->opencl.cfg.num_groups;
-    
-    int32_t y_3185 = group_sizze_3183 - 1;
-    int32_t x_3186 = sizze_3145 + y_3185;
-    int32_t w_div_group_sizze_3187 = squot32(x_3186, group_sizze_3183);
-    int32_t num_groups_maybe_zzero_3188 = smin32(w_div_group_sizze_3187,
-                                                 max_num_groups_3184);
-    int32_t num_groups_3189 = smax32(1, num_groups_maybe_zzero_3188);
-    int32_t num_threads_3190 = num_groups_3189 * group_sizze_3183;
-    int32_t y_3191 = num_threads_3190 - 1;
-    int32_t x_3192 = sizze_3145 + y_3191;
-    int32_t per_thread_elements_3193 = squot32(x_3192, num_threads_3190);
-    int32_t y_3242 = smod32(sizze_3145, num_threads_3190);
-    int32_t x_3243 = num_threads_3190 - y_3242;
-    int32_t y_3244 = smod32(x_3243, num_threads_3190);
-    int32_t padded_sizze_3245 = sizze_3145 + y_3244;
-    int32_t per_chunk_3247 = squot32(padded_sizze_3245, num_threads_3190);
-    int64_t binop_x_3271 = sext_i32_i64(y_3244);
-    int64_t bytes_3270 = binop_x_3271 * 4;
-    struct memblock_device mem_3272;
-    
-    mem_3272.references = NULL;
-    memblock_alloc_device(ctx, &mem_3272, bytes_3270);
-    
-    int64_t binop_x_3274 = sext_i32_i64(padded_sizze_3245);
-    int64_t bytes_3273 = binop_x_3274 * 4;
-    struct memblock_device mem_3275;
-    
-    mem_3275.references = NULL;
-    memblock_alloc_device(ctx, &mem_3275, bytes_3273);
-    
-    int32_t tmp_offs_3307 = 0;
-    
-    if (sizze_3145 * sizeof(int32_t) > 0) {
-        OPENCL_SUCCEED(clEnqueueCopyBuffer(ctx->opencl.queue, xs_mem_3267.mem,
-                                           mem_3275.mem, 0, tmp_offs_3307 * 4,
-                                           sizze_3145 * sizeof(int32_t), 0,
-                                           NULL, NULL));
-        if (ctx->debugging)
-            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-    }
-    tmp_offs_3307 += sizze_3145;
-    if (y_3244 * sizeof(int32_t) > 0) {
-        OPENCL_SUCCEED(clEnqueueCopyBuffer(ctx->opencl.queue, mem_3272.mem,
-                                           mem_3275.mem, 0, tmp_offs_3307 * 4,
-                                           y_3244 * sizeof(int32_t), 0, NULL,
-                                           NULL));
-        if (ctx->debugging)
-            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-    }
-    tmp_offs_3307 += y_3244;
-    
-    int64_t binop_y_3277 = sext_i32_i64(per_chunk_3247);
-    int64_t binop_x_3278 = 4 * binop_y_3277;
-    int64_t binop_y_3279 = sext_i32_i64(num_threads_3190);
-    int64_t bytes_3276 = binop_x_3278 * binop_y_3279;
-    struct memblock_device mem_3280;
-    
-    mem_3280.references = NULL;
-    memblock_alloc_device(ctx, &mem_3280, bytes_3276);
-    
-    struct futrts_ call_ret_3337;
-    
-    call_ret_3337 = futrts_map_transpose_opencl_i32(ctx, mem_3280, 0, mem_3275,
-                                                    0, 1, per_chunk_3247,
-                                                    num_threads_3190,
-                                                    num_threads_3190 *
-                                                    per_chunk_3247,
-                                                    num_threads_3190 *
-                                                    per_chunk_3247);
-    
-    int32_t y_3254 = smod32(sizze_3146, num_threads_3190);
-    int32_t x_3255 = num_threads_3190 - y_3254;
-    int32_t y_3256 = smod32(x_3255, num_threads_3190);
-    int32_t padded_sizze_3257 = sizze_3146 + y_3256;
-    int32_t per_chunk_3259 = squot32(padded_sizze_3257, num_threads_3190);
-    int64_t binop_x_3282 = sext_i32_i64(y_3256);
-    int64_t bytes_3281 = binop_x_3282 * 4;
-    struct memblock_device mem_3283;
-    
-    mem_3283.references = NULL;
-    memblock_alloc_device(ctx, &mem_3283, bytes_3281);
-    
-    int64_t binop_x_3285 = sext_i32_i64(padded_sizze_3257);
-    int64_t bytes_3284 = binop_x_3285 * 4;
-    struct memblock_device mem_3286;
-    
-    mem_3286.references = NULL;
-    memblock_alloc_device(ctx, &mem_3286, bytes_3284);
-    
-    int32_t tmp_offs_3308 = 0;
-    
-    if (sizze_3146 * sizeof(int32_t) > 0) {
-        OPENCL_SUCCEED(clEnqueueCopyBuffer(ctx->opencl.queue, ys_mem_3269.mem,
-                                           mem_3286.mem, 0, tmp_offs_3308 * 4,
-                                           sizze_3146 * sizeof(int32_t), 0,
-                                           NULL, NULL));
-        if (ctx->debugging)
-            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-    }
-    tmp_offs_3308 += sizze_3146;
-    if (y_3256 * sizeof(int32_t) > 0) {
-        OPENCL_SUCCEED(clEnqueueCopyBuffer(ctx->opencl.queue, mem_3283.mem,
-                                           mem_3286.mem, 0, tmp_offs_3308 * 4,
-                                           y_3256 * sizeof(int32_t), 0, NULL,
-                                           NULL));
-        if (ctx->debugging)
-            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-    }
-    tmp_offs_3308 += y_3256;
-    
-    int64_t binop_y_3288 = sext_i32_i64(per_chunk_3259);
-    int64_t binop_x_3289 = 4 * binop_y_3288;
-    int64_t bytes_3287 = binop_x_3289 * binop_y_3279;
-    struct memblock_device mem_3291;
-    
-    mem_3291.references = NULL;
-    memblock_alloc_device(ctx, &mem_3291, bytes_3287);
-    
-    struct futrts_ call_ret_3338;
-    
-    call_ret_3338 = futrts_map_transpose_opencl_i32(ctx, mem_3291, 0, mem_3286,
-                                                    0, 1, per_chunk_3259,
-                                                    num_threads_3190,
-                                                    num_threads_3190 *
-                                                    per_chunk_3259,
-                                                    num_threads_3190 *
-                                                    per_chunk_3259);
-    
-    int64_t binop_x_3296 = sext_i32_i64(num_groups_3189);
-    int64_t bytes_3295 = binop_x_3296 * 4;
-    struct memblock_device mem_3297;
-    
-    mem_3297.references = NULL;
-    memblock_alloc_device(ctx, &mem_3297, bytes_3295);
-    
-    int64_t binop_y_3293 = sext_i32_i64(group_sizze_3183);
-    int64_t bytes_3292 = 4 * binop_y_3293;
-    struct memblock_local mem_3294;
-    
-    mem_3294.references = NULL;
-    if (ctx->debugging)
-        fprintf(stderr, "%s: %d\n", "input size", (int) sizze_3145);
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_3198, 0,
-                                  bytes_3292, NULL));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_3198, 1,
-                                  sizeof(sizze_3145), &sizze_3145));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_3198, 2,
-                                  sizeof(num_threads_3190), &num_threads_3190));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_3198, 3,
-                                  sizeof(per_thread_elements_3193),
-                                  &per_thread_elements_3193));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_3198, 4,
-                                  sizeof(per_chunk_3247), &per_chunk_3247));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_3198, 5,
-                                  sizeof(per_chunk_3259), &per_chunk_3259));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_3198, 6,
-                                  sizeof(mem_3280.mem), &mem_3280.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_3198, 7,
-                                  sizeof(mem_3291.mem), &mem_3291.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->chunked_reduce_kernel_3198, 8,
-                                  sizeof(mem_3297.mem), &mem_3297.mem));
-    if (1 * (num_groups_3189 * group_sizze_3183) != 0) {
-        const size_t global_work_sizze_3339[1] = {num_groups_3189 *
-                     group_sizze_3183};
-        const size_t local_work_sizze_3343[1] = {group_sizze_3183};
-        int64_t time_start_3340, time_end_3341;
+    for (int32_t i_3176 = 0; i_3176 < sizze_3145; i_3176++) {
+        int32_t binop_param_x_3166 = *(int32_t *) &xs_mem_3181.mem[i_3176 * 4];
+        int32_t binop_param_y_3167 = *(int32_t *) &ys_mem_3183.mem[i_3176 * 4];
+        int32_t res_3168 = binop_param_x_3166 - binop_param_y_3167;
+        int32_t res_3169 = abs(res_3168);
+        char cond_3170 = slt32(res_3169, acc_3177);
+        int32_t res_3171;
         
-        if (ctx->debugging) {
-            fprintf(stderr, "Launching %s with global work size [",
-                    "chunked_reduce_kernel_3198");
-            fprintf(stderr, "%zu", global_work_sizze_3339[0]);
-            fprintf(stderr, "].\n");
-            time_start_3340 = get_wall_time();
+        if (cond_3170) {
+            res_3171 = acc_3177;
+        } else {
+            res_3171 = res_3169;
         }
-        OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
-                                              ctx->chunked_reduce_kernel_3198,
-                                              1, NULL, global_work_sizze_3339,
-                                              local_work_sizze_3343, 0, NULL,
-                                              NULL));
-        if (ctx->debugging) {
-            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-            time_end_3341 = get_wall_time();
-            
-            long time_diff_3342 = time_end_3341 - time_start_3340;
-            
-            ctx->chunked_reduce_kernel_3198_total_runtime += time_diff_3342;
-            ctx->chunked_reduce_kernel_3198_runs++;
-            fprintf(stderr, "kernel %s runtime: %ldus\n",
-                    "chunked_reduce_kernel_3198", (int) time_diff_3342);
-        }
-    }
-    
-    struct memblock_device mem_3303;
-    
-    mem_3303.references = NULL;
-    memblock_alloc_device(ctx, &mem_3303, 4);
-    
-    struct memblock_local mem_3300;
-    
-    mem_3300.references = NULL;
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_3234, 0, bytes_3292,
-                                  NULL));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_3234, 1,
-                                  sizeof(num_groups_3189), &num_groups_3189));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_3234, 2,
-                                  sizeof(mem_3297.mem), &mem_3297.mem));
-    OPENCL_SUCCEED(clSetKernelArg(ctx->reduce_kernel_3234, 3,
-                                  sizeof(mem_3303.mem), &mem_3303.mem));
-    if (1 * group_sizze_3183 != 0) {
-        const size_t global_work_sizze_3344[1] = {group_sizze_3183};
-        const size_t local_work_sizze_3348[1] = {group_sizze_3183};
-        int64_t time_start_3345, time_end_3346;
         
-        if (ctx->debugging) {
-            fprintf(stderr, "Launching %s with global work size [",
-                    "reduce_kernel_3234");
-            fprintf(stderr, "%zu", global_work_sizze_3344[0]);
-            fprintf(stderr, "].\n");
-            time_start_3345 = get_wall_time();
-        }
-        OPENCL_SUCCEED(clEnqueueNDRangeKernel(ctx->opencl.queue,
-                                              ctx->reduce_kernel_3234, 1, NULL,
-                                              global_work_sizze_3344,
-                                              local_work_sizze_3348, 0, NULL,
-                                              NULL));
-        if (ctx->debugging) {
-            OPENCL_SUCCEED(clFinish(ctx->opencl.queue));
-            time_end_3346 = get_wall_time();
-            
-            long time_diff_3347 = time_end_3346 - time_start_3345;
-            
-            ctx->reduce_kernel_3234_total_runtime += time_diff_3347;
-            ctx->reduce_kernel_3234_runs++;
-            fprintf(stderr, "kernel %s runtime: %ldus\n", "reduce_kernel_3234",
-                    (int) time_diff_3347);
-        }
+        int32_t acc_tmp_3185 = res_3171;
+        
+        acc_3177 = acc_tmp_3185;
     }
+    res_3160 = acc_3177;
+    scalar_out_3184 = res_3160;
     
-    int32_t read_res_3349;
+    struct futrts_int32_t retval_3186;
     
-    OPENCL_SUCCEED(clEnqueueReadBuffer(ctx->opencl.queue, mem_3303.mem, CL_TRUE,
-                                       0, sizeof(int32_t), &read_res_3349, 0,
-                                       NULL, NULL));
-    
-    int32_t res_3160 = read_res_3349;
-    
-    scalar_out_3306 = res_3160;
-    
-    struct futrts_int32_t retval_3336;
-    
-    retval_3336.v0 = scalar_out_3306;
-    memblock_unref_device(ctx, &mem_3272);
-    memblock_unref_device(ctx, &mem_3275);
-    memblock_unref_device(ctx, &mem_3280);
-    memblock_unref_device(ctx, &mem_3283);
-    memblock_unref_device(ctx, &mem_3286);
-    memblock_unref_device(ctx, &mem_3291);
-    memblock_unref_device(ctx, &mem_3297);
-    memblock_unref_local(ctx, &mem_3294);
-    memblock_unref_device(ctx, &mem_3303);
-    memblock_unref_local(ctx, &mem_3300);
-    return retval_3336;
+    retval_3186.v0 = scalar_out_3184;
+    return retval_3186;
 }
 struct futhark_i32_1d {
-    struct memblock_device mem;
+    struct memblock mem;
     int64_t shape[1];
 } ;
 struct futhark_i32_1d *futhark_new_i32_1d(struct futhark_context *ctx,
@@ -3537,28 +2189,21 @@ struct futhark_i32_1d *futhark_new_i32_1d(struct futhark_context *ctx,
     if (arr == NULL)
         return NULL;
     arr->mem.references = NULL;
-    memblock_alloc_device(ctx, &arr->mem, dim0 * sizeof(int32_t));
-    if (dim0 * sizeof(int32_t) > 0)
-        OPENCL_SUCCEED(clEnqueueWriteBuffer(ctx->opencl.queue, arr->mem.mem,
-                                            CL_TRUE, 0, dim0 * sizeof(int32_t),
-                                            data + 0, 0, NULL, NULL));
+    memblock_alloc(ctx, &arr->mem, dim0 * sizeof(int32_t));
+    memmove(arr->mem.mem + 0, data + 0, dim0 * sizeof(int32_t));
     arr->shape[0] = dim0;
     return arr;
 }
 int futhark_free_i32_1d(struct futhark_context *ctx, struct futhark_i32_1d *arr)
 {
-    memblock_unref_device(ctx, &arr->mem);
+    memblock_unref(ctx, &arr->mem);
     free(arr);
     return 0;
 }
 int futhark_values_i32_1d(struct futhark_context *ctx,
                           struct futhark_i32_1d *arr, int32_t *data)
 {
-    if (arr->shape[0] * sizeof(int32_t) > 0)
-        OPENCL_SUCCEED(clEnqueueReadBuffer(ctx->opencl.queue, arr->mem.mem,
-                                           CL_TRUE, 0, arr->shape[0] *
-                                           sizeof(int32_t), data + 0, 0, NULL,
-                                           NULL));
+    memmove(data + 0, arr->mem.mem + 0, arr->shape[0] * sizeof(int32_t));
     return 0;
 }
 int64_t *futhark_shape_i32_1d(struct futhark_context *ctx,
@@ -3569,33 +2214,33 @@ int64_t *futhark_shape_i32_1d(struct futhark_context *ctx,
 int futhark_main(struct futhark_context *ctx, int32_t *out0,
                  struct futhark_i32_1d *in0, struct futhark_i32_1d *in1)
 {
-    int64_t xs_mem_sizze_3266;
-    struct memblock_device xs_mem_3267;
+    int64_t xs_mem_sizze_3180;
+    struct memblock xs_mem_3181;
     
-    xs_mem_3267.references = NULL;
+    xs_mem_3181.references = NULL;
     
-    int64_t ys_mem_sizze_3268;
-    struct memblock_device ys_mem_3269;
+    int64_t ys_mem_sizze_3182;
+    struct memblock ys_mem_3183;
     
-    ys_mem_3269.references = NULL;
+    ys_mem_3183.references = NULL;
     
     int32_t sizze_3145;
     int32_t sizze_3146;
-    int32_t scalar_out_3306;
+    int32_t scalar_out_3184;
     
-    xs_mem_3267 = in0->mem;
-    xs_mem_sizze_3266 = in0->mem.size;
+    xs_mem_3181 = in0->mem;
+    xs_mem_sizze_3180 = in0->mem.size;
     sizze_3145 = in0->shape[0];
-    ys_mem_3269 = in1->mem;
-    ys_mem_sizze_3268 = in1->mem.size;
+    ys_mem_3183 = in1->mem;
+    ys_mem_sizze_3182 = in1->mem.size;
     sizze_3146 = in1->shape[0];
     
-    struct futrts_int32_t ret_3350;
+    struct futrts_int32_t ret_3187;
     
-    ret_3350 = futrts_main(ctx, xs_mem_sizze_3266, xs_mem_3267,
-                           ys_mem_sizze_3268, ys_mem_3269, sizze_3145,
+    ret_3187 = futrts_main(ctx, xs_mem_sizze_3180, xs_mem_3181,
+                           ys_mem_sizze_3182, ys_mem_3183, sizze_3145,
                            sizze_3146);
-    scalar_out_3306 = ret_3350.v0;
-    *out0 = scalar_out_3306;
+    scalar_out_3184 = ret_3187.v0;
+    *out0 = scalar_out_3184;
     return 0;
 }
