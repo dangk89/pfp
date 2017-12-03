@@ -67,8 +67,9 @@ let main () : [][]i32 =
   let height:i32 = 30
   let width:i32 = 70
   let grid : *[][]i32 = replicate height (replicate width 0)
-  let lines = [((58,20),(2,3)),((11,25),(5,15))]
+  --let lines = [((58,20),(2,3)),((11,25),(5,15))]
+  let lines = [((1,1),(1,70))]
   --let transl_lines = map (transl_img (1,1)) lines
-  let rot_lines = map (rotate_img (0,0) 1.570) lines
+  let rot_lines = map (rotate_img (15,35) 1.570) lines
  
   in drawlines grid rot_lines
