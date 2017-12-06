@@ -46,21 +46,21 @@ let transl_img ((xoff,yoff):point) ((t1,t2):line) : line =
 	(transl_point (xoff,yoff) t1, transl_point (xoff,yoff) t2)
 
 -- Rotate point
-let rotate_point (origin:point) (rads: f64) ((x,y):point)  : point =
+let rotate_point (rpoint:point) (rads: f32) ((x,y):point)  : point =
 	 -- Convert all vars to float
-  let px = f64.i32 x 
-	let py = f64.i32 y
-	let ox = f64.i32 origin.1
-	let oy = f64.i32 origin.2
+  let px = f32.i32 x 
+	let py = f32.i32 y
+	let ox = f32.i32 rpoint.1
+	let oy = f32.i32 rpoint.2
   -- Calculate new points
-	let nx = f64.round(ox + (f64.cos rads) * (px-ox) - (f64.sin rads) * (py - oy))
-	let ny = f64.round(oy + (f64.sin rads) * (px-ox) + (f64.cos rads) * (py - oy))
-	in (i32.f64 nx, i32.f64 ny)
+	let nx = f32.round(ox + (f32.cos rads) * (px-ox) - (f32.sin rads) * (py - oy))
+	let ny = f32.round(oy + (f32.sin rads) * (px-ox) + (f32.cos rads) * (py - oy))
+	in (i32.f32 nx, i32.f32 ny)
 
 -- Rotate image
-let rotate_img (origin:point) (rads: f64) ((t1,t2):line) : line =
+let rotate_img (rpoint:point) (rads: f32) ((t1,t2):line) : line =
   -- Function that can be mapped on type []line
-	(rotate_point origin rads t1,  rotate_point origin rads t2) 
+	(rotate_point rpoint rads t1,  rotate_point rpoint rads t2) 
 
 -- Draw lines on a 70 by 30 grid
 let main () : [][]i32 =

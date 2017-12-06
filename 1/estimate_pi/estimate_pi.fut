@@ -1,5 +1,6 @@
 default(f32)
 
+-- Takes two arrays of f32 and estimates pi from the point-wise distance
 let estimate_pi [n] (xs: [n]f32) (ys: [n]f32) : f32 =
 	let montecarlo (x: f32) (y: f32) =
 		if ((x-1.0)**2.0) + ((y-1.0)**2.0) <= 1.0 then 1 else 0
