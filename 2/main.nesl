@@ -1,0 +1,72 @@
+
+-- Check if element is alpha numeric
+function alphanum(x) =
+ 	if x >= 97 then
+		x <= 122
+ 	else if x >= 65 then
+    	x <= 90
+    else if x >= 48 then
+    	x <= 57
+  	else false
+
+-- Tail of v
+function tail(v) =
+	{e: e in v; i in index(#v) | i>0}
+
+-- Init of v
+function init(v) =
+	{e: e in v; i in index(#v) | i<#v-1}
+
+-- Split words
+function words(s) =
+	let s = "!" ++ s;
+		flags = {if alphanum(ord(x)) then 1 else 0 : x in s}++[0];
+		idx = {i : i in index(#flags); f in flags | f == 0};
+		slices = {idx[i+1]-idx[i] : i in index((#idx-1))};
+		part = partition(s,slices) in
+		{tail(p) : p in part | #p>1}
+		
+-- Divide and conquer exclusive scan
+function dscan(v) = 
+	if #v == 1 then ([0], v[0])
+		else let n = #v / 2;
+		         r = {dscan(e) : e in partition(v,[n,#v-n])};
+		         (x1,x2) = r[0]; -- tuple var
+		         (y1,y2) = r[1] -- tuple var
+		         in (x1++{e + x2 : e in y1},x2+y2) -- sum tuple elements pairwise
+
+-- Apply dscan (Concat outut of dscan)
+function apply_dscan(v) =
+		let (fst,lst) = dscan(v)
+		in fst
+
+-- Unite and Conquer scan extended
+function uscan(v) =
+  -- First part from lecture4 slides
+  if #v == 1 then [0]
+  else if #v % 2 == 0 then
+  let vp = partition(v, {2 : _ in index(#v/2)});
+  ps = {p[0]+p[1] : p in vp};
+  sps = uscan(ps)
+  	in concat({[s, s+p[0]] : s in sps, p in vp})
+	else
+  -- Same function as above, but using padded vector instead of original v
+  let vpad = v ++ [0];	-- padding v with one element
+ 	  vp = partition(vpad, {2 : _ in index(#vpad/2)});
+      ps = {p[0]+p[1] : p in vp};
+      sps = uscan(ps)
+      in init(concat({[a, a+p[0]] : a in sps, p in vp})) -- Init to remove padding element
+
+
+-- Get digit at location
+function dloc(v,loc) = 
+	(v/loc)%10
+
+-- Radix sort 10. Only works with digits of 100
+function radix(v) = 
+		let os = concat(scatter({(dloc(e,1),e) : e in v},10));
+			ts = concat(scatter({(dloc(e,10),e) : e in os},10));
+			hs = concat(scatter({(dloc(e,100),e) : e in ts},10))
+			  in concat(scatter({(dloc(e,1000),e) : e in ts},10))
+			
+
