@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="author" content="By Ken Friis Larsen (kflarsen@diku.dk)">
+  <title>Dragon Push</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+  </style>
+  <link href="data:text/css; charset=utf-8,%40font%2Dface%20%7B%0A%20%20font%2Dfamily%3A%20%27Dancing%20Script%27%3B%0A%20%20font%2Dstyle%3A%20normal%3B%0A%20%20font%2Dweight%3A%20400%3B%0A%20%20src%3A%20local%28%27Dancing%20Script%20Regular%27%29%2C%20local%28%27DancingScript%2DRegular%27%29%2C%20url%28https%3A%2F%2Ffonts%2Egstatic%2Ecom%2Fs%2Fdancingscript%2Fv9%2FDK0eTGXiZjN6yA8zAEyM2S5FJMZltoAAwO2fP7iHu2o%2Ettf%29%20format%28%27truetype%27%29%3B%0A%7D%0A%40font%2Dface%20%7B%0A%20%20font%2Dfamily%3A%20%27Oswald%27%3B%0A%20%20font%2Dstyle%3A%20normal%3B%0A%20%20font%2Dweight%3A%20400%3B%0A%20%20src%3A%20local%28%27Oswald%20Regular%27%29%2C%20local%28%27Oswald%2DRegular%27%29%2C%20url%28https%3A%2F%2Ffonts%2Egstatic%2Ecom%2Fs%2Foswald%2Fv16%2FY%5FTKV6o8WovbUd3m%5FX9aAA%2Ettf%29%20format%28%27truetype%27%29%3B%0A%7D%0A%40font%2Dface%20%7B%0A%20%20font%2Dfamily%3A%20%27Source%20Code%20Pro%27%3B%0A%20%20font%2Dstyle%3A%20normal%3B%0A%20%20font%2Dweight%3A%20400%3B%0A%20%20src%3A%20local%28%27Source%20Code%20Pro%27%29%2C%20local%28%27SourceCodePro%2DRegular%27%29%2C%20url%28https%3A%2F%2Ffonts%2Egstatic%2Ecom%2Fs%2Fsourcecodepro%2Fv7%2Fmrl8jkM18OlOQN8JLgasD9zbP97U9sKh0jjxbPbfOKg%2Ettf%29%20format%28%27truetype%27%29%3B%0A%7D%0A%40font%2Dface%20%7B%0A%20%20font%2Dfamily%3A%20%27Source%20Serif%20Pro%27%3B%0A%20%20font%2Dstyle%3A%20normal%3B%0A%20%20font%2Dweight%3A%20400%3B%0A%20%20src%3A%20local%28%27Source%20Serif%20Pro%27%29%2C%20local%28%27SourceSerifPro%2DRegular%27%29%2C%20url%28https%3A%2F%2Ffonts%2Egstatic%2Ecom%2Fs%2Fsourceserifpro%2Fv5%2FCeUM4np2c42DV49nanp55aqQQDHDiKO%2DLH8MFmRo0b0%2Ettf%29%20format%28%27truetype%27%29%3B%0A%7D%0A" rel="stylesheet">
+  <link href="data:text/css;charset=utf-8,body%20%7B%0Amargin%2Dtop%3A%201%2E0em%3B%0Abackground%2Dcolor%3A%20white%3B%0A%20font%2Dsize%3A%2013pt%3B%0Acolor%3A%20black%3B%0Awidth%3A%2090%25%3B%0Amargin%3A%200%20auto%3B%0A%7D%0Ahtml%20%7B%0Afont%2Dfamily%3A%20%22Source%20Serif%20Pro%22%2C%20Georgia%2C%20%22Times%20New%20Roman%22%2C%20serif%3B%0A%7D%0Ah2%2C%20h3%2C%20h4%2C%20h5%2C%20h6%20%7B%0Afont%2Dfamily%3A%20%22Oswald%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dweight%3A%20400%3B%0Acolor%3A%20%23313131%3B%0Aletter%2Dspacing%3A%20%2D%2E025rem%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20%22Source%20Code%20Pro%22%2C%20Menlo%2C%20monospace%3B%0A%20background%2Dcolor%3A%20%23F0F3F3%3B%0A%7D%0Apre%20%7B%0Abackground%2Dcolor%3A%20%23F0F3F3%3B%0Apadding%3A%206px%3B%0Aword%2Dwrap%3A%20break%2Dword%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%0Afont%2Dfamily%3A%20%22Source%20Code%20Pro%22%2C%20Menlo%2C%20monospace%3B%0Aborder%3A%201px%20solid%20silver%3B%0A%7D%0Ah1%2Etitle%20%7B%0Afont%2Dfamily%3A%20%27Dancing%20Script%27%2C%20sans%2Dserif%3B%0Atext%2Dalign%3A%20center%3B%20font%2Dsize%3A%203%2E8em%3B%20color%3A%20black%3B%20margin%2Dbottom%3A%203px%3B%0A%7D%0Ah1%20%2Esmall%20%7B%20font%2Dsize%3A%200%2E4em%3B%20%7D%0Ah1%20a%20%7B%20text%2Ddecoration%3A%20none%20%7D%0Ah2%20%7B%20font%2Dsize%3A%201%2E5em%3B%20color%3A%20black%3B%20%7D%0Ap%2Eauthor%20%7B%20font%2Dsize%3A%201em%3B%20text%2Dalign%3A%20center%3B%20color%3A%20black%3B%20%7D%0Ap%2Edate%20%7B%20font%2Dsize%3A%201em%3B%20text%2Dalign%3A%20center%3B%20color%3A%20black%3B%20%7D%0Aa%20%7B%20color%3A%20black%3B%20%7D%0A%2Edescription%20%7B%20font%2Dsize%3A%201%2E2em%3B%20margin%2Dbottom%3A%2030px%3B%20margin%2Dtop%3A%2030px%3B%20font%2Dstyle%3A%20italic%3B%7D%0A%2Edownload%20%7B%20float%3A%20right%3B%20%7D%0A%0Ahr%20%7B%20border%3A%200%3B%20width%3A%2080%25%3B%20border%2Dbottom%3A%201px%20solid%20%23aaa%7D%0A%2Efooter%20%7B%20text%2Dalign%3Acenter%3B%20padding%2Dtop%3A30px%3B%20font%2Dstyle%3A%20italic%3B%20%7D%0Atable%20%7B%20border%2Dcollapse%3A%20collapse%20%7D%0Atd%20%7B%20border%3A%201px%20solid%20black%20%7D%0A" rel="stylesheet">
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header>
+<h1 class="title">Dragon Push</h1>
+<p class="author">By Ken Friis Larsen <code>(kflarsen@diku.dk)</code></p>
+<p class="date">Last revision: December 10, 2017</p>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#overview">Overview</a></li>
+<li><a href="#description-of-the-game">Description of the game</a></li>
+<li><a href="#program-specification">Program specification</a></li>
+</ul>
+</nav>
+<h2 id="overview">Overview</h2>
+<p>The assignment task is to write a program that plays “Draigana dhakka” (Dragon Push) an ancient board game from Karmar-Taj.</p>
+<h2 id="description-of-the-game">Description of the game</h2>
+<p>Draigana dhakka is a 2 person game, played on an <span class="math inline"><em>N</em></span> by <span class="math inline"><em>N</em></span> board (traditionally the board is either 4x4, 7x7, or 98x98 but <span class="math inline"><em>N</em></span>x<span class="math inline"><em>N</em></span> is a simple generalisation to adjust the difficulty of the game, and its implementation). Initially the board is empty, and the players take turns inserting one dragon of their colour, Red (R) or Blue (B), on the board. The colour R always goes first. The columns and rows are numbered from 1 to <span class="math inline"><em>N</em></span>, starting from the top left, as in:</p>
+<pre><code>     1 2 3 4
+    +-+-+-+-+
+  1 | | | | |
+    +-+-+-+-+
+  2 | | | | |
+    +-+-+-+-+
+  3 | | | | |
+    +-+-+-+-+
+  4 | | | | |
+    +-+-+-+-+</code></pre>
+<p>A dragon can only be inserted on the board by sliding it onto a particular row from the left or from the right, or onto a particular column from the top or from the bottom. So there are 4*<span class="math inline"><em>N</em></span> possible “moves” (ways to insert a dragon). They will be named “Li”, “Ri”, “Ti”, “Bi” respectively, where “i” is the number of the row or column where the insertion takes place.</p>
+<p>When a dragon is inserted, there may be a dragon on the square where the insertion takes place. In this case, all dragons on the insertion row or column from the insertion square up to the first empty square are moved one square further to make room for the inserted dragon. Note that the last dragon of the row or column will be pushed off the board (and must be removed from play) if there are no empty squares on the insertion row or column.</p>
+<p>A row or a column is a <em>line of power</em> of a given colour, if it contains <span class="math inline"><em>N</em></span> dragons of the given colour.</p>
+<p>The game ends either when an insertion:</p>
+<ol type="1">
+<li><p>repeats any previous configuration of the board; in this case the player who inserted the dragon <strong>loses</strong>.</p>
+<p>Note that a configuration of the board includes the identity of the active player.</p></li>
+<li><p>creates a configuration with more lines of power of one colour than lines of power of the other colour; the player whose colour is dominant (in number of lines of power) <strong>wins</strong>.</p></li>
+</ol>
+<p>A game always leads to a win by one of the two players. Draws are impossible.</p>
+<h2 id="program-specification">Program specification</h2>
+<p>The standard input of the program will contain <span class="math inline"><em>N</em></span> on the first line and this will be followed by a sequence of moves (in the notation previously described) with one move per line. There are no intervening spaces or empty lines. If the standard input only contains a single line, it simply means an empty sequence of moves.</p>
+<p>This sequence of moves specifies an incomplete game. The program must read the incomplete game from standard input and compute the move to make next. The program’s sole output, on standard output, is a single line indicating the next move.</p>
+<p>The program can assume that all moves in the sequence are valid.</p>
+<p>The program must not take more than 10 seconds of real time to perform its task. Programs exceeding this limit will automatically lose the game (so a simple way to resign is to pause or go into an infinite loop).</p>
+<p>Here is a sample standard input:</p>
+<pre><code>4
+L2
+T2
+L2
+B2
+R2</code></pre>
+<p>which means the configuration of the board for this incomplete game is:</p>
+<pre><code>     1 2 3 4
+    +-+-+-+-+
+  1 | |B| | |
+    +-+-+-+-+
+  2 |R|R| |R|
+    +-+-+-+-+
+  3 | | | | |
+    +-+-+-+-+
+  4 | |B| | |
+    +-+-+-+-+</code></pre>
+<p>The program’s output could be</p>
+<pre><code>T2</code></pre>
+<p>The binary for your program must be named <code>play-par</code>. It will be invoked as:</p>
+<pre><code>./play-par +RTS -N</code></pre>
+<p>with the program’s top-level directory as the current working directory.</p>
+<p>The program is run once for every move and then terminates; the current move state will be passed to the program on standard input. Persistent inter-move state may be kept in the current directory if desired.</p>
+<p>When the program has chosen a move, it should print the move to standard output and exit. If the program has not done so after 10 seconds (real aka “wall clock” time), the program will be terminated forcibly, and lose the game. The program will have the entire machine to itself when it runs.</p>
+<p>There should be no child processes alive after the top-level process exits; the program must ensure that all its child processes have exited before the top-level process exits itself.</p>
+<p>The board size will be a value between 4 and 100 (inclusive), which will be revealed after the tournament.</p>
+<p>The source for a correct <code>play-par</code> program can be very short, for example the following 3 line <code>Main.hs</code>:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">module</span> <span class="dt">Main</span> <span class="kw">where</span>
+<span class="ot">main ::</span> <span class="dt">IO</span> ()
+main <span class="fu">=</span> putStrLn <span class="st">&quot;T2&quot;</span></code></pre></div>
+<p>Obviously selecting the <em>best</em> move will require a more elaborate program than this.</p>
+<hr />
+<p>End of task description</p>
+</body>
+</html>
