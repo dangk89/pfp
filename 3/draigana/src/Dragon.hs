@@ -96,17 +96,17 @@ makeBoard n p [x] = rotApply p x (emptyBoard n)
 makeBoard n p (x:xs) = rotApply p x (makeBoard n (toggle p) xs)
 
 
-
 -- All possible moves = Always the same
 allMoves :: Board -> [Move]
 allMoves b = [ (x, y) | x <- [L,R,T,B], y <- [1..n]]
 
 
--- Calculates all possible confs from a given configuration (is fed to the aimove or evaluate function)
+-- Calculates all possible confs from a given configuration (is fed to the aimove or evaluate function) (TOGGLES THE PLAYER)
 moves :: Conf -> [Conf]
 moves (mv,p, board)
     | lineWinner board /= Nothing = []
-    | otherwise = [(mv, p, rotApply p mv board)::Conf | mv <- allMoves board]
+    | otherwise = [(mv, (toggle p), rotApply p mv board)::Conf | mv <- allMoves board]
+
 
 -- Check for winning lines
 checkList :: [Maybe Player] -> Maybe Player
@@ -150,28 +150,20 @@ makeConf (n, mvs) =
         b = mkBoard n Red mvs
         in ((L,1),p,b)
 
-
-
 mkBoard :: Int -> Player -> [Move] -> Board -- Player should always be red as red always starts
 mkBoard n p [x] = rotApply p x (emptyBoard n)
 mkBoard n p (x:xs) = rotApply p x (makeBoard n (toggle p) xs)
 
 
-
-
-
-
-
-
-
-ms = [(L,2),(T,2),(L,2),(B,2),(R,2)]::[Move]
+ms = [(L,2),(T,2),(L,2),(B,2),(R,2),(B,4)]::[Move]
 ms3 = [(L,2),(T,2),(L,2),(B,2),(R,2),(B,3)]::[Move]
 ms2 = [(L,2),(L,3),(L,2),(L,3),(L,2),(L,4),(L,2),(L,3)]
 
 
-board = makeBoard 4 Blue ms
+board = mkBoard 4 Red ms
 board2 = makeBoard 4 Red ms2
 board3 = [[Just Blue,Just Red,Nothing,Nothing],[Just Blue,Just Blue,Nothing,Just Blue],[Nothing,Nothing,Nothing,Nothing],[Nothing,Just Red,Nothing,Nothing]]
+
 
 -- Som lavet i nextmove hvis den tager Kens eksempel som incomplete input
 cf1 = ((L,2), Blue, board)::Conf
@@ -180,5 +172,6 @@ cf1 = ((L,2), Blue, board)::Conf
 bbb = [[Nothing,Just Blue,Nothing,Nothing],[Just Red,Just Red,Just Red,Just Red],[Nothing,Nothing,Nothing,Nothing],[Nothing,Just Blue,Just Blue,Nothing]]
 inc = (4, ms)::Incomplete
 cf2 = ((L,2), Blue, board3)::Conf
+
 
 bb = [[Just Red,Just Blue,Nothing,Nothing],[Just Red,Just Red,Nothing,Just Red],[Nothing,Nothing,Nothing,Nothing],[Nothing,Just Blue,Nothing,Nothing]]
