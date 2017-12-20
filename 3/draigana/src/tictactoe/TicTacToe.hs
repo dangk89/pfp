@@ -33,11 +33,11 @@ emptyBoard = take 3 emptyRows
 
 type Position = (Int, Int)
 
-
 nextPlayer :: Board -> Player
 nextPlayer board = if countMoves board `mod` 2 == 0 then Cross else Nought
 countMoves board =
   sum $ map (\ cell -> case cell of Move _ -> 1; _ -> 0) $ concat board
+
 
 -- You should probably take a good look at this function until you
 -- understand it. Keep in mind that it does not check whether the move
@@ -79,6 +79,8 @@ winDiagonal :: Board -> Maybe Player
 winDiagonal board =
     msum $ map checkList [diagonal board, diagonal $ map reverse board]
 
+
+
 hasWinner :: Board -> Maybe Player
 hasWinner b = msum $ [winHorizontal, winVertical, winDiagonal] <*> pure b
 
@@ -107,13 +109,13 @@ type Conf = (Position, Board)
 moves :: Conf -> [Conf]
 moves (_, board) = [ (p, move p board) | p <- allValidMoves board]
 
+
 static :: Player -> Conf -> Int
-static me (_, board) = maybe 0 won $ hasWinner board
+static me (_, board) = maybe 0 won $ hasWinner boardf
   where won winner = if me == winner then 1 else -1
 
 
 -- Simple text setup used for play test
-
 showBoard board = mapM_ showRow board
   where showRow row = mapM_ showCell row >> putStrLn ""
         showCell (Move Cross)  = putStr "X"

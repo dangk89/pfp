@@ -20,83 +20,13 @@ type Incomplete = (Int      -- size of the board
 data Cell = Player | Empty
           deriving (Eq, Show)
 
-----------------------------------------------------------------
 
--- Takes row, checks row composition responds accordlingly (empty cells in the row, full rows)
-rowComp :: [Maybe Player] -> Board-> [Maybe Player]
-rowComp x b
-    | not $ elem Nothing x = [Just (nextPlayer b)]++init x
-    | otherwise = [Just (nextPlayer b)]++(delete Nothing x)
-
--- Apply a move to a board (Only from the left) (uses rowComp to check if cell is empty)
-apply :: Move -> Board -> Board
-apply (x,y) board = rowsBefore ++ ((rowComp new board) : rowsAfter) -- 
-  where (rowsBefore, new : rowsAfter) = splitAt (y-1) board
-
--- Rotate board and apply moves to the rotated board
-rotApply :: Move -> Board -> Board
-rotApply (L,y) board = apply (L,y) board
-rotApply (R,y) board = map reverse (apply (R,y) (map reverse board))
-rotApply (T,y) board = transpose (apply (T,y) (transpose board))
-rotApply (B,y) board = reverse (transpose (apply (B,y) (map reverse (transpose board))))
-
--- Make board from list of moves
-makeBoard :: [Move] -> Board
-makeBoard [x] = rotApply x (emptyBoard 4)
-makeBoard (x:xs) = rotApply x (makeBoard xs)
-
--- All possible moves
-allMoves :: Board -> [Move]
-allMoves b = [ (x, y) | x <- [L,R,T,B], y <- [1..length b]]
-
--- Create all possible boards from a board
---moves :: Board -> [Board]
---moves b = [(rot_apply p b) | p <- allMoves b]
-
-moves :: Conf -> [Conf]
-moves (_,p, board) = [(mv, nextPlayer board, rotApply mv board)::Conf | mv <- allMoves board]
-
---moves (mv,p, board)   
---    | hasWinner b1 /= Nothing = []
---    | otherwise = [(mv, p, rotApply mv board)::Conf | mv <- allMoves board]
-
-
-
--- Derives next player from Board
-nextPlayer :: Board -> Player
-nextPlayer board = if countMoves board `mod` 2 == 0 then Red else Blue
-countMoves board =
-  sum $ map (\ cell -> case cell of Nothing -> 0; _ -> 1) $ concat board
-
-----------------------------------------------------------------
-
-checkList :: [Maybe Player] -> Maybe Player
-checkList row
-    | nub row == [Just Red] = Just Red
-    | nub row == [Just Blue] = Just Blue
-    | otherwise = Nothing
-
-winHorizontal :: Board -> Maybe Player
-winHorizontal board = msum $ map checkList board
-
-winVertical :: Board -> Maybe Player
-winVertical board = msum $ map checkList $ transpose board
-
---winConf :: Conf -> Maybe Player
---winConf c =
-
-hasWinner :: Board -> Maybe Player
-hasWinner b = msum $ [winHorizontal, winVertical] <*> pure b
-
-
-static :: Player -> Conf -> Int
-static me (_,_, board) = maybe 0 won $ hasWinner board
-  where won winner = if me == winner then 1 else -1
+n = 4
 
 
 ----------------------------------------------------------------
 
--- Læser spil config
+-- Read game input
 readIncomplete :: IO Incomplete
 readIncomplete = do
   inp <- getContents
@@ -105,7 +35,8 @@ readIncomplete = do
       moves  = parseMoves $ tail ls
   return (n, moves)
 
--- Oversætter liste til liste af moves
+
+-- Vector of strings to vector of moves
 parseMoves :: [String] -> [Move]
 parseMoves ls = map parseMove ls
   where parseMove (s : idx) = (read [s], read idx)
@@ -114,7 +45,6 @@ parseMoves ls = map parseMove ls
 printMove :: Move -> IO()
 printMove (s, idx) =
   putStrLn $ show s ++ show idx
-
 
 
 -- Representing boards with lists
@@ -137,60 +67,88 @@ showBoard n board = border ++ inner ++ border
     showPlayer (Just _)   = "B|"
     showPlayer _          = " |"
 
-
 toggle Red  = Blue
 toggle Blue = Red
 
--- Dummy implementation, just repeats the last move or starts with T2
+-- Takes row, checks row composition responds accordlingly push row if cell not empty else insert
+rowComp :: Player -> [Maybe Player] -> Board-> [Maybe Player]
+rowComp p x b
+    | not $ elem Nothing x = [Just p]++init x
+    | otherwise = [Just p]++(delete Nothing x)
+
+-- Apply a move to a board (Only from the left) uses rowcomp to insert dragon appropriately
+apply :: Player -> Move -> Board -> Board
+apply p (x,y) board = rowsBefore ++ ((rowComp p new board) : rowsAfter) -- 
+  where (rowsBefore, new : rowsAfter) = splitAt (y-1) board
+
+-- Rotate board and apply moves to the rotated board
+rotApply :: Player -> Move -> Board -> Board
+rotApply p (L,y) board = apply p (L,y) board
+rotApply p (R,y) board = map reverse (apply p (R,y) (map reverse board))
+rotApply p (T,y) board = transpose (apply p (T,y) (transpose board))
+rotApply p (B,y) board = reverse (transpose (apply p (B,y) (map reverse (transpose board))))
+
+-- Make board from list of moves
+makeBoard :: Player -> [Move] -> Board
+makeBoard p [x] = rotApply p x (emptyBoard 4)
+makeBoard p (x:xs) = rotApply p x (makeBoard (toggle p) xs)
+
+
+-- All possible moves = Always the same
+allMoves :: Board -> [Move]
+allMoves b = [ (x, y) | x <- [L,R,T,B], y <- [1..n]]
+
+
+-- Calculates all possible confs from a given configuration (is fed to the aimove or evaluate function)
+moves :: Conf -> [Conf]
+moves (mv,p, board)
+    | lineWinner board /= Nothing = []
+    | otherwise = [(mv, p, rotApply p mv board)::Conf | mv <- allMoves board]
+
+-- Check for winning lines
+checkList :: [Maybe Player] -> Maybe Player
+checkList row
+    | nub row == [Just Red] = Just Red
+    | nub row == [Just Blue] = Just Blue
+    | otherwise = Nothing
+
+-- Check horizontal lines for winning lines
+linesHorizontal :: Board -> [Maybe Player]
+linesHorizontal board = map checkList board
+
+-- Check vertical for winning lines
+linesVertical :: Board -> [Maybe Player]
+linesVertical board = map checkList $ transpose board
+
+-- If player has more lines than the other, return that player
+lineWinner :: Board -> Maybe Player
+lineWinner b =
+    let c = (linesHorizontal b)++(linesVertical b)
+        reds = length $ filter (==Just Red) c
+        blues = length $ filter (==Just Blue) c
+    in if blues < reds then Just Red else if blues > reds then Just Blue else Nothing
+
+-- Heuristics = 1 if AI is winner, -1 if opponent is winner
+static :: Player -> Conf -> Int
+static me (_,_, board) = maybe 0 won $ lineWinner board
+  where won winner = if me == winner then 1 else -1
+
+
 nextMove :: Incomplete -> Move
 nextMove (n, mvs) =
-    let b = makeBoard mvs
-        p = nextPlayer b
-        (mv,pl,m) = aimove 1 moves (static p) c1
-        in mv
-
---------------------------------------------------------------------------------
-
-
-move1 = (L,1)::Move
-inc1 = (4,[move1,move1])::Incomplete  
-board1 = [map Just [Red,Blue]]::Board
-
-b1 = [[Just Blue, Just Red,Nothing],[Nothing,Nothing,Nothing],[Nothing,Nothing,Just Red]]::Board
-ms1 = [(L,4),(L,2),(L,4),(R,2),(L,4),(L,2),(L,4),(L,1)]::[Move]
-ms11 = [(L,1),(L,4),(L,1),(L,4),(L,1),(R,4)]
-
-tb = [[Just Blue, Nothing, Nothing, Just Red],[Nothing,Just Blue,Nothing,Nothing],[Nothing,Nothing,Just Blue,Nothing],[Nothing,Nothing,Nothing,Just Blue]]::Board
-
-ms2 = [(L,2),(T,2),(L,2),(B,2),(R,2),(B,4)]::[Move]
-
-ms3 = [(L,1),(L,2),(L,1),(L,3),(L,1),(L,2),(L,1),(L,2),(L,4),(L,2)]::[Move]
-
-c1 = ((L,2), Red, (makeBoard ms11))::Conf
-c2 = ((L,2), Blue, (makeBoard ms2))::Conf
-
-inc = (4,[(L,2),(T,2),(L,2),(B,2),(R,2)])::Incomplete
+    let p = if (length mvs) `mod` 2 == 0 then Red else Blue
+        b = makeBoard p mvs
+        cf = ((L,2),p,b)::Conf
+        (m,_,_) = aimove 3 moves (static p) cf
+        in m
 
 
--- TO DO
--- CONFCACHE, CONFWIN
--- MOVE I CONF, HOW???
-    -- evt brug Nothing og Maybe Move??
+ms = [(L,2),(T,2),(L,2),(B,2),(R,2)]::[Move]
+ms2 = [(L,2),(L,3),(L,2),(L,3),(L,2),(L,4),(L,2),(L,3)]
+board = makeBoard Red ms
+board2 = makeBoard Red ms2
+cf1 = ((L,2), Blue, board)::Conf
 
-mvz = [(L,1),(L,1),(L,1),(B,4),(B,4),(B,4)]::[Move]
+bbb = [[Nothing,Just Blue,Nothing,Nothing],[Just Red,Just Red,Just Red,Just Red],[Nothing,Nothing,Nothing,Nothing],[Nothing,Just Blue,Just Blue,Nothing]]
 
-
-b3 = [[Nothing,Just Red,Nothing,Nothing],[Just Blue,Just Blue,Nothing,Just Blue],[Nothing,Nothing,Nothing,Nothing],[Nothing,Just Red,Nothing,Just Red]]
-
-
-
-
-
-board = makeBoard ms2
-
-
-ams = allMoves board
-bs = [rotApply mv board | mv <- ams]
-abc = [static Red ((L,1),Blue,e) | e <- bs]
-tbb = rotApply (L,2) board
-tbbb = rotApply (R,2) tbb
+inc = (4, ms2)::Incomplete

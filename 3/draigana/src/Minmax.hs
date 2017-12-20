@@ -38,11 +38,11 @@ evaluate :: (a -> [a]) -> (a -> Int) -> a ->  Int
 evaluate moves static = maximize . fmap static . gametree moves
 
 evaluatez :: (a -> [a]) -> (a -> Int) -> a ->  Int
-evaluatez moves static = maximize . fmap static . prune 3 . gametree moves
+evaluatez moves static = minimize . fmap static . prune 3 . gametree moves
 
 aimove :: Int -> (a -> [a]) -> (a -> Int) -> a -> a
 aimove depth moves static p = maxkey [(evaluate' move, move) | move <- moves p]
-  where evaluate' = maximize . fmap static . prune depth . gametree moves
+  where evaluate' = minimize . fmap static . prune depth . gametree moves
 
 prune :: Int -> Tree a -> Tree a
 prune 0 (Node a _) = Node a []
