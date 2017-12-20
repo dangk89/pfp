@@ -71,15 +71,17 @@ toggle Red  = Blue
 toggle Blue = Red
 
 -- Takes row, checks row composition responds accordlingly push row if cell not empty else insert
-rowComp :: Player -> [Maybe Player] -> Board-> [Maybe Player]
-rowComp p x b
-    | not $ elem Nothing x = [Just p]++init x
-    | otherwise = [Just p]++(delete Nothing x)
+rowComp :: [Maybe Player] -> Board-> [Maybe Player]
+rowComp x b
+    | not $ elem Nothing x = init x
+    | otherwise = delete Nothing x
+
 
 -- Apply a move to a board (Only from the left) uses rowcomp to insert dragon appropriately
 apply :: Player -> Move -> Board -> Board
-apply p (x,y) board = rowsBefore ++ ((rowComp p new board) : rowsAfter) -- 
+apply p (x,y) board = rowsBefore ++ (([Just p]++rowComp new board) : rowsAfter) -- 
   where (rowsBefore, new : rowsAfter) = splitAt (y-1) board
+
 
 -- Rotate board and apply moves to the rotated board
 rotApply :: Player -> Move -> Board -> Board
@@ -89,9 +91,10 @@ rotApply p (T,y) board = transpose (apply p (T,y) (transpose board))
 rotApply p (B,y) board = reverse (transpose (apply p (B,y) (map reverse (transpose board))))
 
 -- Make board from list of moves
-makeBoard :: Player -> [Move] -> Board
-makeBoard p [x] = rotApply p x (emptyBoard 4)
-makeBoard p (x:xs) = rotApply p x (makeBoard (toggle p) xs)
+makeBoard :: Int -> Player -> [Move] -> Board
+makeBoard n p [x] = rotApply p x (emptyBoard n)
+makeBoard n p (x:xs) = rotApply p x (makeBoard n (toggle p) xs)
+
 
 
 -- All possible moves = Always the same
@@ -128,27 +131,54 @@ lineWinner b =
         blues = length $ filter (==Just Blue) c
     in if blues < reds then Just Red else if blues > reds then Just Blue else Nothing
 
--- Heuristics = 1 if AI is winner, -1 if opponent is winner
+
 static :: Player -> Conf -> Int
 static me (_,_, board) = maybe 0 won $ lineWinner board
   where won winner = if me == winner then 1 else -1
 
 
 nextMove :: Incomplete -> Move
-nextMove (n, mvs) =
-    let p = if (length mvs) `mod` 2 == 0 then Red else Blue
-        b = makeBoard p mvs
-        cf = ((L,2),p,b)::Conf
-        (m,_,_) = aimove 3 moves (static p) cf
+nextMove (n,mvs) =
+    let (mv,me,b) = makeConf (n,mvs)
+        (m,_,_) = aimove 3 moves (static me) (mv,me,b)
         in m
 
 
+makeConf :: Incomplete -> Conf
+makeConf (n, mvs) =
+    let p = if (length mvs) `mod` 2 == 0 then Red else Blue
+        b = mkBoard n Red mvs
+        in ((L,1),p,b)
+
+
+
+mkBoard :: Int -> Player -> [Move] -> Board -- Player should always be red as red always starts
+mkBoard n p [x] = rotApply p x (emptyBoard n)
+mkBoard n p (x:xs) = rotApply p x (makeBoard n (toggle p) xs)
+
+
+
+
+
+
+
+
+
 ms = [(L,2),(T,2),(L,2),(B,2),(R,2)]::[Move]
+ms3 = [(L,2),(T,2),(L,2),(B,2),(R,2),(B,3)]::[Move]
 ms2 = [(L,2),(L,3),(L,2),(L,3),(L,2),(L,4),(L,2),(L,3)]
-board = makeBoard Red ms
-board2 = makeBoard Red ms2
+
+
+board = makeBoard 4 Blue ms
+board2 = makeBoard 4 Red ms2
+board3 = [[Just Blue,Just Red,Nothing,Nothing],[Just Blue,Just Blue,Nothing,Just Blue],[Nothing,Nothing,Nothing,Nothing],[Nothing,Just Red,Nothing,Nothing]]
+
+-- Som lavet i nextmove hvis den tager Kens eksempel som incomplete input
 cf1 = ((L,2), Blue, board)::Conf
 
-bbb = [[Nothing,Just Blue,Nothing,Nothing],[Just Red,Just Red,Just Red,Just Red],[Nothing,Nothing,Nothing,Nothing],[Nothing,Just Blue,Just Blue,Nothing]]
 
-inc = (4, ms2)::Incomplete
+bbb = [[Nothing,Just Blue,Nothing,Nothing],[Just Red,Just Red,Just Red,Just Red],[Nothing,Nothing,Nothing,Nothing],[Nothing,Just Blue,Just Blue,Nothing]]
+inc = (4, ms)::Incomplete
+cf2 = ((L,2), Blue, board3)::Conf
+
+bb = [[Just Red,Just Blue,Nothing,Nothing],[Just Red,Just Red,Nothing,Just Red],[Nothing,Nothing,Nothing,Nothing],[Nothing,Just Blue,Nothing,Nothing]]
